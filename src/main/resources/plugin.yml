@@ -1,0 +1,11 @@
+name: FarmersLife
+main: curtis1509.farmerslife.FarmersLife
+version: 0.0.1
+description: Crops for cash!
+api-version: 1.17
+commands:
+  box:
+    description: Selects a chest to exchange crops for gold
+    usage: /box (Then select a chest)
+  buy:
+    description: Buy some farming goodies

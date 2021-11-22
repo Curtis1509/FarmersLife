@@ -1,0 +1,79 @@
+
+buildscript {
+    repositories {
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+    }
+    dependencies {
+        classpath "gradle.plugin.com.github.johnrengelman:shadow:7.1.0"
+    }
+}
+
+import com.github.jengelman.gradle.plugins.shadow.tasks.ConfigureShadowRelocation
+
+plugins {
+    id 'java'
+    id "com.github.johnrengelman.shadow" version "7.1.0"
+}
+
+apply plugin: "com.github.johnrengelman.shadow"
+
+group 'org.example'
+version '1.0-SNAPSHOT'
+
+
+repositories {
+    mavenCentral()
+    maven { url = 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/'
+        content {
+            includeGroup 'org.bukkit'
+            includeGroup 'org.spigotmc'
+        }}
+    maven { url 'https://jitpack.io'}
+}
+
+dependencies {
+    shadow localGroovy()
+    shadow gradleApi()
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
+    compileOnly 'org.spigotmc:spigot-api:1.17.1-R0.1-SNAPSHOT'
+    implementation 'com.github.JordanOsterberg.JScoreboards:JScoreboards:2.1.2-RELEASE'
+}
+
+task relocateShadowJar(type: ConfigureShadowRelocation) {
+    target = tasks.shadowJar
+}
+
+tasks.shadowJar.dependsOn tasks.relocateShadowJar
+
+shadowJar {
+    dependencies {
+
+    }
+}
+
+
+jar {
+    actions = []
+    dependsOn = []
+    dependsOn('shadowJar')
+}
+
+shadowJar {
+    dependencies {
+    }
+}
+
+task deploy(type: Copy, dependsOn: ['build']) {
+    from "${buildDir}/libs"
+    into "final/"
+}
+
+test {
+    useJUnitPlatform()
+}
+java {
+    toolchain.languageVersion.set(JavaLanguageVersion.of(16))
+}

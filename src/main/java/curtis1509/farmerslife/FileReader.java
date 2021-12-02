@@ -10,6 +10,8 @@ import java.util.Scanner;
 
 import static org.bukkit.Bukkit.getLogger;
 
+//yaml test
+
 public class FileReader {
 
     //Just loads the entire file into a string to be later split down in the main class.
@@ -56,6 +58,7 @@ public class FileReader {
         }
         return 100;
     }
+
 
     public boolean playerExists(String playerName) {
         FileReader fileReader = new FileReader();

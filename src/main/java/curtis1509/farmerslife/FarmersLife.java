@@ -3,10 +3,7 @@ package curtis1509.farmerslife;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.TextComponent;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
 import org.bukkit.block.data.Ageable;
@@ -37,7 +34,6 @@ public class FarmersLife extends JavaPlugin implements Listener, CommandExecutor
     public static LinkedList<String> waitingForPlayer = new LinkedList<>();
     public static Inventory menuInventory = Bukkit.createInventory(null, 9, "Farmers Life Menu");
     public static Inventory seedsInventory = Bukkit.createInventory(null, 18, "Seeds");
-    public static Inventory skillsInventory = Bukkit.createInventory(null, 18, "Skills");
     public static Inventory buyInventory = Bukkit.createInventory(null, 54, "Buy");
     public static LinkedList<DepositCrop> depositCrops = new LinkedList<>();
     public static LinkedList<curtis1509.farmerslife.Player> players = new LinkedList<>();
@@ -110,8 +106,8 @@ public class FarmersLife extends JavaPlugin implements Listener, CommandExecutor
             int price = Integer.parseInt(data[i]);
             i++;
             int amount = Integer.parseInt(data[i]);
-            if (material!=null)
-            addToInventory(buyInventory, material, price, amount);
+            if (material != null)
+                addToInventory(buyInventory, material, price, amount);
             else
                 getLogger().info(matName + " could not be identified");
         }
@@ -131,27 +127,34 @@ public class FarmersLife extends JavaPlugin implements Listener, CommandExecutor
         loadShop();
 
         addToInventory(seedsInventory, Material.WHEAT_SEEDS, 1, 8);
-        addToInventory(seedsInventory, Material.MELON_SEEDS, 50, 1);
-        addToInventory(seedsInventory, Material.PUMPKIN_SEEDS, 50, 1);
-        addToInventory(seedsInventory, Material.CARROT, 1, 8);
-        addToInventory(seedsInventory, Material.POTATO, 1, 8);
-        addToInventory(seedsInventory, Material.SUGAR_CANE, 1, 8);
-        addToInventory(seedsInventory, Material.CACTUS, 10, 1);
-        addToInventory(seedsInventory, Material.COCOA_BEANS, 50, 8);
-        addToInventory(seedsInventory, Material.BEETROOT_SEEDS, 50, 8);
+        addToInventory(seedsInventory, Material.MELON_SEEDS, 5, 1);
+        addToInventory(seedsInventory, Material.PUMPKIN_SEEDS, 5, 1);
+        addToInventory(seedsInventory, Material.CARROT, 2, 8);
+        addToInventory(seedsInventory, Material.POTATO, 2, 8);
+        addToInventory(seedsInventory, Material.SUGAR_CANE, 2, 8);
+        addToInventory(seedsInventory, Material.CACTUS, 3, 1);
+        addToInventory(seedsInventory, Material.COCOA_BEANS, 8, 8);
+        addToInventory(seedsInventory, Material.BEETROOT_SEEDS, 4, 8);
     }
 
     public void populateDepositCrops() {
         depositCrops.add(new DepositCrop(Material.WHEAT, 1));
-        depositCrops.add(new DepositCrop(Material.CARROT, 1));
-        depositCrops.add(new DepositCrop(Material.POTATO, 1));
-        depositCrops.add(new DepositCrop(Material.MELON_SLICE, 1));
-        depositCrops.add(new DepositCrop(Material.PUMPKIN, 1));
-        depositCrops.add(new DepositCrop(Material.TROPICAL_FISH, 1));
-        depositCrops.add(new DepositCrop(Material.PUFFERFISH, 1));
+        depositCrops.add(new DepositCrop(Material.EGG, 0.4));
+        depositCrops.add(new DepositCrop(Material.MILK_BUCKET, 1.25));
+        depositCrops.add(new DepositCrop(Material.CARROT, 0.5));
+        depositCrops.add(new DepositCrop(Material.BEEF, 2.0));
+        depositCrops.add(new DepositCrop(Material.PORKCHOP, 2.35));
+        depositCrops.add(new DepositCrop(Material.CHICKEN, 3.0));
+        depositCrops.add(new DepositCrop(Material.POTATO, 0.5));
+        depositCrops.add(new DepositCrop(Material.MELON_SLICE, 0.3));
+        depositCrops.add(new DepositCrop(Material.PUMPKIN, 4));
+        depositCrops.add(new DepositCrop(Material.TROPICAL_FISH, 2));
+        depositCrops.add(new DepositCrop(Material.PUFFERFISH, 1.5));
+        depositCrops.add(new DepositCrop(Material.COD, 1));
+        depositCrops.add(new DepositCrop(Material.SALMON, 1.5));
         depositCrops.add(new DepositCrop(Material.CACTUS, 1));
-        depositCrops.add(new DepositCrop(Material.SUGAR_CANE, 1));
-        depositCrops.add(new DepositCrop(Material.COCOA_BEANS, 1));
+        depositCrops.add(new DepositCrop(Material.SUGAR_CANE, 0.25));
+        depositCrops.add(new DepositCrop(Material.COCOA_BEANS, 4));
     }
 
     public void addToInventory(Inventory inventory, Material material, int price, int amount) {
@@ -185,11 +188,13 @@ public class FarmersLife extends JavaPlugin implements Listener, CommandExecutor
             if (player.getPlayer().getName().equals(event.getPlayer().getName())) {
                 player.setPlayer(event.getPlayer());
                 playerExists = true;
+                player.reloadScoreboard();
                 player.scoreboard.updateScoreboard();
+                player.reloadPlayerName();
             }
         }
         if (!playerExists) {
-            players.add(new curtis1509.farmerslife.Player(event.getPlayer(), fileReader.loadPlayerCash(event.getPlayer().getName())));
+            players.add(new curtis1509.farmerslife.Player(event.getPlayer(), fileReader.loadPlayerCash(event.getPlayer().getName()), fileReader.loadPlayerSkillProfits(event.getPlayer().getName())));
             event.getPlayer().sendMessage("Welcome to FarmersLife!");
         } else {
             event.getPlayer().sendMessage("Welcome back to FarmersLife!");
@@ -220,6 +225,22 @@ public class FarmersLife extends JavaPlugin implements Listener, CommandExecutor
         Player player = (Player) event.getWhoClicked(); // The player that clicked the item
         ItemStack clicked = event.getCurrentItem(); // The item that was clicked
         Inventory inventory = event.getInventory(); // The inventory that was clicked in
+
+        for (curtis1509.farmerslife.Player p : players) {
+            if (inventory == p.getSkills().skillsInventory) {
+                if (event.getClickedInventory() == p.getSkills().skillsInventory) {
+                    if (event.getCurrentItem().getType() == Material.CHEST) {
+                        event.setCancelled(true);
+                        if (p.getSkills().skillProfits.LevelUp(p, p.cash)) {
+                            p.getSkills().skillsInventory.clear();
+                            p.getSkills().populateSkillsInventory();
+                            ((Player) event.getWhoClicked()).playSound(event.getWhoClicked().getLocation(), Sound.BLOCK_NOTE_BLOCK_CHIME, 1, 1);
+                        }
+                    }
+                }
+            }
+        }
+
         if (inventory == menuInventory) { // The inventory is our custom Inventory
             assert clicked != null;
             if (clicked.getType() == Material.WHEAT_SEEDS) { // The item that the player clicked it dirt
@@ -230,7 +251,11 @@ public class FarmersLife extends JavaPlugin implements Listener, CommandExecutor
                 // player.getInventory().addItem(new ItemStack(Material.DIRT, 1)); // Adds dirt
             } else if (clicked.getType() == Material.EXPERIENCE_BOTTLE) { // The item that the player clicked it dirt
                 event.setCancelled(true); // Make it so the dirt is back in its original spot
-                event.getWhoClicked().openInventory(skillsInventory);
+                for (curtis1509.farmerslife.Player p : players) {
+                    if (event.getWhoClicked().getName().equals(p.getPlayer().getName())) {
+                        event.getWhoClicked().openInventory(p.getSkills().skillsInventory);
+                    }
+                }
             } else if (clicked.getType() == Material.GOLD_INGOT) { // The item that the player clicked it dirt
                 event.setCancelled(true); // Make it so the dirt is back in its original spot
                 event.getWhoClicked().openInventory(buyInventory);
@@ -238,12 +263,12 @@ public class FarmersLife extends JavaPlugin implements Listener, CommandExecutor
                 event.setCancelled(true); // Make it so the dirt is back in its original spot
                 event.getWhoClicked().closeInventory();
                 waitingForPlayer.add(event.getWhoClicked().getName());
-                event.getWhoClicked().sendMessage("Hells yeah, select a chest and you can use it to make some thicc gold ingots");
+                event.getWhoClicked().sendMessage("Great! Click a chest to make it your deposit box.");
                 Thread wait = new Thread(() -> {
                     try {
                         Thread.sleep(10000);
                         if (waitingForPlayer.contains(event.getWhoClicked().getName())) {
-                            event.getWhoClicked().sendMessage("Bruz you took too long to select a chest so we've cancelled your command");
+                            event.getWhoClicked().sendMessage("You took too long to select a chest. Try again!");
                             waitingForPlayer.remove(event.getWhoClicked().getName());
                         }
                     } catch (InterruptedException e) {
@@ -254,7 +279,7 @@ public class FarmersLife extends JavaPlugin implements Listener, CommandExecutor
                 wait.start();
             }
         }
-        if (inventory == buyInventory || inventory == seedsInventory) {
+        if ((inventory == buyInventory || inventory == seedsInventory) && event.getClickedInventory() == buyInventory) {
             for (BuyItem item : buyItems) {
                 if (item.getMaterial() == clicked.getType()) {
                     for (curtis1509.farmerslife.Player p : players) {
@@ -286,10 +311,6 @@ public class FarmersLife extends JavaPlugin implements Listener, CommandExecutor
                     }
                 }
             }
-        }
-        if (event.getSlot() == 8) {
-            event.setResult(Event.Result.DENY);
-            event.setCancelled(true);
         }
     }
 
@@ -331,7 +352,7 @@ public class FarmersLife extends JavaPlugin implements Listener, CommandExecutor
 
                 getLogger().log(Level.INFO, "Player " + event.getPlayer().getName() + " clicked");
                 if (!taken) {
-                    event.getPlayer().sendMessage("Cool beans! Put some crops in here overnight and you get some gold in return!");
+                    event.getPlayer().sendMessage("Cool beans! Put some crops in here overnight and you can get some money in return!");
                     waitingForPlayer.remove(event.getPlayer().getName());
                     Random random = new Random();
                     depositBoxes.add(new DepositBox((Block) event.getClickedBlock().getLocation().getBlock(), event.getPlayer().getName(), random.nextInt(100000)));
@@ -346,21 +367,12 @@ public class FarmersLife extends JavaPlugin implements Listener, CommandExecutor
             if (!(box.getOwner().equals(event.getPlayer().getName())) && box.getDepositBox().getLocation().toString().equals(event.getBlock().getLocation().toString())) {
                 event.setCancelled(true);
                 event.getPlayer().sendMessage("You can't break someone else's deposit box");
-            }
-            else if ((box.getOwner().equals(event.getPlayer().getName())) && box.getDepositBox().getLocation().toString().equals(event.getBlock().getLocation().toString())) {
+            } else if ((box.getOwner().equals(event.getPlayer().getName())) && box.getDepositBox().getLocation().toString().equals(event.getBlock().getLocation().toString())) {
                 fileReader.removeDepositData(box);
                 event.getPlayer().sendMessage("You've destroyed your deposit box");
             }
         }
-        if (doubleWheat.equals(event.getPlayer().getName()))
-            if (Objects.requireNonNull(event.getBlock()).getType() == Material.WHEAT && event.getBlock().getBlockData() instanceof Ageable) {
-                Ageable age = (Ageable) event.getBlock().getBlockData();
-                if (age.getAge() == age.getMaximumAge()) {
-                    event.getPlayer().sendMessage("Ahoy you broke some wheat");
-                    ItemStack gold = new ItemStack(Material.GOLD_INGOT, 20);
-                    Objects.requireNonNull(this.getServer().getWorld("world")).dropItem(event.getBlock().getLocation(), gold);
-                }
-            }
+
     }
 
     public boolean containsItem(LinkedList<DepositCrop> depositCrops, ItemStack itemStack) {
@@ -372,12 +384,33 @@ public class FarmersLife extends JavaPlugin implements Listener, CommandExecutor
         return false;
     }
 
+    public DepositCrop getCropFromList(LinkedList<DepositCrop> depositCrops, ItemStack itemStack) {
+        for (DepositCrop crop : depositCrops) {
+            if (crop.getMaterial() == itemStack.getType()) {
+                return crop;
+            }
+        }
+        return null;
+    }
+
     public int getAmountOf(LinkedList<DepositCrop> depositCrops, Inventory inventory) {
         int i = 0;
         for (ItemStack is : inventory.getContents()) {
             if (is != null) {
                 if (containsItem(depositCrops, is)) {
                     i += is.getAmount();
+                }
+            }
+        }
+        return i;
+    }
+
+    public double getAmountOfCash(LinkedList<DepositCrop> depositCrops, Inventory inventory) {
+        double i = 0;
+        for (ItemStack is : inventory.getContents()) {
+            if (is != null) {
+                if (containsItem(depositCrops, is)) {
+                    i += (is.getAmount() * getCropFromList(depositCrops,is).getReward());
                 }
             }
         }
@@ -496,6 +529,7 @@ public class FarmersLife extends JavaPlugin implements Listener, CommandExecutor
                                 player.teleport(player.getBedSpawnLocation());
                             else
                                 player.teleport(world.getSpawnLocation());
+
                             player.sendMessage("Oh no! You passed out.");
                             player.sendMessage("We saw some people rummaging through your pockets, they stole $" + cash);
                             player.setFoodLevel(3);
@@ -512,15 +546,34 @@ public class FarmersLife extends JavaPlugin implements Listener, CommandExecutor
                             Chest chest = (Chest) box.getDepositBox().getState();
                             for (curtis1509.farmerslife.Player player : players) {
                                 if (box.getOwner().equals(player.getName())) {
-                                    player.addCash(getAmountOf(depositCrops, chest.getInventory()));
+
+                                    player.addCash(getAmountOfCash(depositCrops, chest.getInventory()) * player.getSkills().skillProfits.getMultiplier());
                                     getLogger().info("adding some cash for " + player.getName());
                                 }
+                                Thread wait = new Thread(() -> {
+                                    try {
+                                        player.getPlayer().playSound(player.getPlayer().getLocation(), Sound.ENTITY_CHICKEN_AMBIENT, 3, 1);
+                                        try {
+                                            Thread.sleep(500);
+                                        } catch (InterruptedException e) {
+                                            e.printStackTrace();
+                                        }
+                                        player.getPlayer().playSound(player.getPlayer().getLocation(), Sound.ENTITY_CHICKEN_DEATH, 3, 1);
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                    }
+                                });
+                                wait.start();
                             }
 
-                            //goldAmount += getAmountOf(depositCrops, chest.getInventory());
+                            //Milk Bucket Exchange
+                            LinkedList<DepositCrop> milkBuckets = new LinkedList<>();
+                            milkBuckets.add(new DepositCrop(Material.MILK_BUCKET, 0));
+                            milkBuckets.add(new DepositCrop(Material.BUCKET, 0));
+                            int buckets = getAmountOf(milkBuckets, chest.getInventory());
                             chest.getInventory().clear();
-                            //ItemStack gold = new ItemStack(Material.GOLD_INGOT, goldAmount);
-                            //chest.getInventory().addItem(gold);
+                            chest.getInventory().addItem(new ItemStack(Material.BUCKET, buckets));
+
                         }
                     }
                     fileReader.savePlayers();
@@ -533,12 +586,12 @@ public class FarmersLife extends JavaPlugin implements Listener, CommandExecutor
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if (cmd.getName().equalsIgnoreCase("box") && !waitingForPlayer.contains(sender.getName())) {
             waitingForPlayer.add(sender.getName());
-            sender.sendMessage("Hells yeah, select a chest and you can use it to make some thicc gold ingots");
+            sender.sendMessage("Great! Click a chest to make it your deposit box.");
             Thread wait = new Thread(() -> {
                 try {
                     Thread.sleep(10000);
                     if (waitingForPlayer.contains(sender.getName())) {
-                        sender.sendMessage("Bruz you took too long to select a chest so we've cancelled your command");
+                        sender.sendMessage("You took too long to select a chest. Try again!");
                         waitingForPlayer.remove(sender.getName());
                     }
                 } catch (InterruptedException e) {
@@ -550,14 +603,18 @@ public class FarmersLife extends JavaPlugin implements Listener, CommandExecutor
             return true;
         } else if (cmd.getName().equalsIgnoreCase("farm")) {
             Objects.requireNonNull(Bukkit.getPlayer(sender.getName())).openInventory(menuInventory);
+        } else if (cmd.getName().equalsIgnoreCase("reloadscores")) {
+            for (curtis1509.farmerslife.Player p : players) {
+                p.reloadScoreboard();
+            }
         } else if (cmd.getName().equalsIgnoreCase("deathinventory")) {
             for (curtis1509.farmerslife.Player player : players) {
-                if (player.getName().equals(sender.getName()) && player.getDeathInventory() != null && player.getCash() >= 100) {
+                if (player.getName().equals(sender.getName()) && player.getDeathInventory() != null) {
                     getLogger().info("returning inventory");
                     Objects.requireNonNull(Bukkit.getPlayer(sender.getName())).openInventory(player.getDeathInventory());
                 }
             }
-        }else if (cmd.getName().equalsIgnoreCase("reloadshop")) {
+        } else if (cmd.getName().equalsIgnoreCase("reloadshop")) {
             buyInventory.clear();
             loadShop();
         }

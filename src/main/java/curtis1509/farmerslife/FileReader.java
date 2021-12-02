@@ -8,6 +8,8 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Scanner;
 
+import static org.bukkit.Bukkit.getLogger;
+
 public class FileReader {
 
     //Just loads the entire file into a string to be later split down in the main class.
@@ -44,13 +46,13 @@ public class FileReader {
         }
     }
 
-    public int loadPlayerCash(String playerName) {
+    public double loadPlayerCash(String playerName) {
         FileReader fileReader = new FileReader();
         String dataIn = fileReader.read("plugins/FarmersLife/players.txt");
         String[] data = dataIn.split(" ");
         for (int i = 0; i < data.length; i++) {
             if (data[i].equals(playerName))
-                return Integer.parseInt(data[i + 1]);
+                return Double.parseDouble(data[i + 1]);
         }
         return 100;
     }
@@ -66,7 +68,7 @@ public class FileReader {
         return false;
     }
 
-    public void updatePlayerData(String playerName, int cash) throws IOException {
+    public void updatePlayerData(String playerName, double cash, Skills skill) throws IOException {
         String filePath = "plugins/FarmersLife/players.txt";
         Scanner sc = new Scanner(new File(filePath));
         StringBuffer buffer = new StringBuffer();
@@ -78,12 +80,25 @@ public class FileReader {
         String fileContents = buffer.toString();
         sc.close();
 
-        String oldLine = playerName + " " + loadPlayerCash(playerName);
-        String newLine = playerName + " " + cash;
+        String oldLine = playerName + " " + loadPlayerCash(playerName) + " " + loadPlayerSkillProfits(playerName);
+        String newLine = playerName + " " + cash + " " + skill.skillProfits.getLevel();
         fileContents = fileContents.replace(oldLine, newLine);
         FileWriter writer = new FileWriter(filePath);
         writer.append(fileContents);
         writer.flush();
+        getLogger().info("updating player data");
+
+    }
+
+    public int loadPlayerSkillProfits(String playerName) {
+        FileReader fileReader = new FileReader();
+        String dataIn = fileReader.read("plugins/FarmersLife/players.txt");
+        String[] data = dataIn.split(" ");
+        for (int i = 0; i < data.length; i++) {
+            if (data[i].equals(playerName))
+                return Integer.parseInt(data[i + 2]);
+        }
+        return 0;
     }
 
     public void removeDepositData(DepositBox depositBox) throws IOException {
@@ -118,14 +133,14 @@ public class FileReader {
                     myWriter = new FileWriter("plugins/FarmersLife/players.txt", true);
                     bw = new BufferedWriter(myWriter);
                     pw = new PrintWriter(bw);
-                    pw.print(" " + player.getPlayer().getName() + " " + player.getCash());
+                    pw.print(" " + player.getPlayer().getName() + " " + player.getCash() + " " +player.getSkills().skillProfits.getLevel());
                     pw.flush();
                     myWriter.close();
                     pw.close();
                     bw.close();
                     myWriter.close();
                 } else {
-                    updatePlayerData(player.getName(), player.getCash());
+                    updatePlayerData(player.getName(), player.getCash(), player.getSkills());
                 }
             }
             myWriter = new FileWriter("plugins/FarmersLife/deposits.txt", true);

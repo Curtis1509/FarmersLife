@@ -2,7 +2,7 @@ name: FarmersLife
 main: curtis1509.farmerslife.FarmersLife
 version: 0.0.1
 description: Crops for cash!
-api-version: 1.17
+api-version: 1.18
 commands:
   box:
     description: Selects a chest to exchange crops for gold
@@ -13,3 +13,5 @@ commands:
     description: Get your inventory back from when you died or passed out
   reloadshop:
     description: Reloads the shop file. Used to refresh prices and items on sale
+  reloadscores:
+    description: Reloads all the scoreboards.

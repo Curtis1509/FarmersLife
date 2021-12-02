@@ -3,22 +3,23 @@ package curtis1509.farmerslife;
 import dev.jcsoftware.jscoreboards.JPerPlayerMethodBasedScoreboard;
 import dev.jcsoftware.jscoreboards.JScoreboardTeam;
 import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.ItemStack;
 
 import static org.bukkit.Bukkit.getLogger;
 
 public class Player {
 
-    int cash;
+    double cash;
     String playerName;
     JPerPlayerMethodBasedScoreboard scoreboard;
     JScoreboardTeam team;
     org.bukkit.entity.Player player;
     Inventory deathInventory;
     int deathInventoryi = 3;
+    Skills skills;
 
-    public Player(org.bukkit.entity.Player player, int cash){
+    public Player(org.bukkit.entity.Player player, double cash, int profitSkill){
         this.cash = cash;
+        skills = new Skills(profitSkill);
         this.player = player;
         this.playerName = player.getName();
         scoreboard = new JPerPlayerMethodBasedScoreboard();
@@ -28,6 +29,24 @@ public class Player {
         );
         scoreboard.addPlayer(player);
         scoreboard.updateScoreboard();
+    }
+
+    public void reloadPlayerName(){
+        this.playerName = player.getName();
+    }
+
+    public void reloadScoreboard(){
+        scoreboard = new JPerPlayerMethodBasedScoreboard();
+        scoreboard.setTitle(player,"Farmers HUD");
+        scoreboard.setLines(
+                player,"$" + cash
+        );
+        scoreboard.addPlayer(player);
+        scoreboard.updateScoreboard();
+    }
+
+    public Skills getSkills(){
+        return skills;
     }
 
     public void setPlayer(org.bukkit.entity.Player player){
@@ -47,7 +66,7 @@ public class Player {
         deathInventory = null;
     }
 
-    public void removeCash(int amount){
+    public void removeCash(double amount){
         cash-=amount;
         scoreboard.setLines(
                 player,"$" + this.cash
@@ -55,13 +74,13 @@ public class Player {
         scoreboard.updateScoreboard();
     }
 
-    public int getCash(){
+    public double getCash(){
         return cash;
     }
 
     public void updateScoreboard(String time){
         scoreboard.setLines(
-                player,"$" + this.cash,time
+                player,"$" + Math.floor(this.cash),time
         );
         scoreboard.updateScoreboard();
     }
@@ -78,11 +97,11 @@ public class Player {
         return scoreboard;
     }
 
-    public void addCash(int cash){
+    public void addCash(double cash){
         this.cash+=cash;
         scoreboard.setTitle(player,"Farmers HUD");
         scoreboard.setLines(
-                player,"$" + this.cash
+                player,"$" + Math.floor(this.cash)
         );
         scoreboard.updateScoreboard();
     }

@@ -1,16 +1,20 @@
 package curtis1509.farmerslife;
 
+import org.apache.commons.lang.ObjectUtils;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.Scanner;
+import java.util.Set;
 
 import static org.bukkit.Bukkit.getLogger;
-
-//yaml test
 
 public class FileReader {
 
@@ -36,129 +40,84 @@ public class FileReader {
         return processString.toString();
     }
 
+    File playersFileT = new File("plugins/FarmersLife/players.yml");
+    File depositsFileT = new File("plugins/FarmersLife/deposits.yml");
+
     public void CreateFile() {
         try {
             Files.createDirectories(Paths.get("plugins/FarmersLife"));
-            File playersFile = new File("plugins/FarmersLife/players.txt");
-            File depositsFile = new File("plugins/FarmersLife/deposits.txt");
-            playersFile.createNewFile();
-            depositsFile.createNewFile();
+            playersFileT.createNewFile();
+            depositsFileT.createNewFile();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
+    public void createBackup() throws IOException {
+        Files.createDirectories(Paths.get("plugins/FarmersLife/Backups"));
+        String date = java.util.Calendar.getInstance().getTime().getSeconds() + "_secs_" + java.util.Calendar.getInstance().getTime().getHours() + "_hours_" + java.util.Calendar.getInstance().getTime().getMinutes() + "mins_" + java.util.Calendar.getInstance().getTime().getDay() + "_" + java.util.Calendar.getInstance().getTime().getMonth() + "_" + java.util.Calendar.getInstance().getTime().getYear();
+
+        File playersFileBackup = new File("plugins/FarmersLife/Backups/players" + date + ".yml");
+        Files.copy(playersFileT.toPath(), playersFileBackup.toPath(), StandardCopyOption.COPY_ATTRIBUTES);
+
+        File depositsFileBackup = new File("plugins/FarmersLife/Backups/deposits" + date + ".yml");
+        Files.copy(depositsFileT.toPath(), depositsFileBackup.toPath(), StandardCopyOption.COPY_ATTRIBUTES);
+    }
+
     public double loadPlayerCash(String playerName) {
-        FileReader fileReader = new FileReader();
-        String dataIn = fileReader.read("plugins/FarmersLife/players.txt");
-        String[] data = dataIn.split(" ");
-        for (int i = 0; i < data.length; i++) {
-            if (data[i].equals(playerName))
-                return Double.parseDouble(data[i + 1]);
-        }
-        return 100;
-    }
-
-
-    public boolean playerExists(String playerName) {
-        FileReader fileReader = new FileReader();
-        String dataIn = fileReader.read("plugins/FarmersLife/players.txt");
-        String[] data = dataIn.split(" ");
-        for (int i = 0; i < data.length; i++) {
-            if (data[i].equals(playerName))
-                return true;
-        }
-        return false;
-    }
-
-    public void updatePlayerData(String playerName, double cash, Skills skill) throws IOException {
-        String filePath = "plugins/FarmersLife/players.txt";
-        Scanner sc = new Scanner(new File(filePath));
-        StringBuffer buffer = new StringBuffer();
-        while (sc.hasNextLine()) {
-            buffer.append(sc.nextLine());
-            if (sc.hasNextLine())
-                buffer.append(System.lineSeparator());
-        }
-        String fileContents = buffer.toString();
-        sc.close();
-
-        String oldLine = playerName + " " + loadPlayerCash(playerName) + " " + loadPlayerSkillProfits(playerName);
-        String newLine = playerName + " " + cash + " " + skill.skillProfits.getLevel();
-        fileContents = fileContents.replace(oldLine, newLine);
-        FileWriter writer = new FileWriter(filePath);
-        writer.append(fileContents);
-        writer.flush();
-        getLogger().info("updating player data");
-
+        FileConfiguration playerConfig = YamlConfiguration.loadConfiguration(playersFileT);
+        double cash;
+        if (playerConfig.contains(playerName + ".cash"))
+            cash = playerConfig.getDouble(playerName + ".cash");
+        else
+            cash = 100;
+        return cash;
     }
 
     public int loadPlayerSkillProfits(String playerName) {
-        FileReader fileReader = new FileReader();
-        String dataIn = fileReader.read("plugins/FarmersLife/players.txt");
-        String[] data = dataIn.split(" ");
-        for (int i = 0; i < data.length; i++) {
-            if (data[i].equals(playerName))
-                return Integer.parseInt(data[i + 2]);
-        }
-        return 0;
+        FileConfiguration playerConfig = YamlConfiguration.loadConfiguration(playersFileT);
+        int level;
+        if (playerConfig.contains(playerName + ".profit"))
+            level = playerConfig.getInt(playerName + ".profit");
+        else
+            level = 0;
+        return level;
     }
 
     public void removeDepositData(DepositBox depositBox) throws IOException {
-        String filePath = "plugins/FarmersLife/deposits.txt";
-        Scanner sc = new Scanner(new File(filePath));
-        StringBuffer buffer = new StringBuffer();
-        while (sc.hasNextLine()) {
-            buffer.append(sc.nextLine());
-            if (sc.hasNextLine())
-                buffer.append(System.lineSeparator());
+        FileConfiguration depositConfig = YamlConfiguration.loadConfiguration(depositsFileT);
+        String id = "" + depositBox.getID();
+        if (depositConfig.contains(id)) {
+            depositConfig.set(id, null);
         }
-        String fileContents = buffer.toString();
-        sc.close();
-
-        String oldLine = " " + depositBox.getOwner() + " " + depositBox.getID() + " " + depositBox.getDepositBox().getLocation().getBlockX() + " "+ depositBox.getDepositBox().getLocation().getBlockY() + " " + depositBox.getDepositBox().getLocation().getBlockZ();
-        String newLine = "";
-        fileContents = fileContents.replace(oldLine, newLine);
-        FileWriter writer = new FileWriter(filePath);
-        writer.append(fileContents);
-        writer.flush();
+        depositConfig.save(depositsFileT);
         FarmersLife.depositBoxes.remove(depositBox);
     }
 
     public void savePlayers() {
+
         CreateFile();
+
         try {
-            FileWriter myWriter = null;
-            BufferedWriter bw = null;
-            PrintWriter pw = null;
+
+            FileConfiguration playerConfig = YamlConfiguration.loadConfiguration(playersFileT);
             for (curtis1509.farmerslife.Player player : FarmersLife.players) {
-                if (!playerExists(player.getPlayer().getName())) {
-                    myWriter = new FileWriter("plugins/FarmersLife/players.txt", true);
-                    bw = new BufferedWriter(myWriter);
-                    pw = new PrintWriter(bw);
-                    pw.print(" " + player.getPlayer().getName() + " " + player.getCash() + " " +player.getSkills().skillProfits.getLevel());
-                    pw.flush();
-                    myWriter.close();
-                    pw.close();
-                    bw.close();
-                    myWriter.close();
-                } else {
-                    updatePlayerData(player.getName(), player.getCash(), player.getSkills());
-                }
+                playerConfig.set(player.getName() + ".cash", player.getCash());
+                playerConfig.set(player.getName() + ".profit", player.getSkills().skillProfits.getLevel());
             }
-            myWriter = new FileWriter("plugins/FarmersLife/deposits.txt", true);
-            bw = new BufferedWriter(myWriter);
-            pw = new PrintWriter(bw);
+            playerConfig.save(playersFileT);
+
+            FileConfiguration depositConfig = YamlConfiguration.loadConfiguration(depositsFileT);
             for (DepositBox deposits : FarmersLife.depositBoxes) {
-                if (!depositExists(deposits.getID())) {
-                    pw.print(" " + deposits.getOwner() + " " + deposits.getID() + " " + deposits.getDepositBox().getLocation().getBlockX() + " " + deposits.getDepositBox().getLocation().getBlockY() + " " + deposits.getDepositBox().getLocation().getBlockZ());
-                }
+                String id = "deposits." + deposits.getID();
+                depositConfig.set(id + ".owner", deposits.getOwner());
+                depositConfig.set(id + ".x", deposits.getDepositBox().getLocation().getBlockX());
+                depositConfig.set(id + ".y", deposits.getDepositBox().getLocation().getBlockY());
+                depositConfig.set(id + ".z", deposits.getDepositBox().getLocation().getBlockZ());
             }
-            pw.flush();
-            myWriter.close();
-            pw.close();
-            bw.close();
-            myWriter.close();
+            depositConfig.save(depositsFileT);
+
+            createBackup();
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -168,33 +127,23 @@ public class FileReader {
     }
 
     public void loadDeposits() {
-        FileReader fileReader = new FileReader();
-        String dataIn = fileReader.read("plugins/FarmersLife/deposits.txt");
-        String[] data = dataIn.split(" ");
-        for (int i = 1; i < data.length; i++) {
-            String playerName = data[i];
-            i++;
-            int id = Integer.parseInt(data[i]);
-            i++;
-            Location location = new Location(FarmersLife.world, Integer.parseInt(data[i]), Integer.parseInt(data[i + 1]), Integer.parseInt(data[i + 2]));
-            i += 2;
-            Block chest = location.getBlock();
-            FarmersLife.depositBoxes.add(new DepositBox(chest, playerName, id));
-            if (i > data.length - 3)
-                break;
-        }
-    }
 
+        try {
+            FileConfiguration depositConfig = YamlConfiguration.loadConfiguration(depositsFileT);
+            ConfigurationSection section = depositConfig.getConfigurationSection("deposits");
+            Set<String> childSections = section.getKeys(false);
 
-    public boolean depositExists(int id) {
-        FileReader fileReader = new FileReader();
-        String dataIn = fileReader.read("plugins/FarmersLife/deposits.txt");
-        String[] data = dataIn.split(" ");
-        for (int i = 0; i < data.length; i++) {
-            if (data[i].equals(Integer.toString(id)))
-                return true;
+            for (String child : childSections) {
+                int id = Integer.parseInt(child);
+                Location location = new Location(FarmersLife.world, depositConfig.getInt("deposits." + child + ".x"), depositConfig.getInt("deposits." + child + ".y"), depositConfig.getInt("deposits." + child + ".z"));
+                String owner = depositConfig.getString("deposits." + child + ".owner");
+                Block chest = location.getBlock();
+                FarmersLife.depositBoxes.add(new DepositBox(chest, owner, id));
+            }
+        } catch (NullPointerException e) {
+            getLogger().info("Deposit Box File has no contents");
         }
-        return false;
     }
 
 }
+

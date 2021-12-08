@@ -17,9 +17,9 @@ public class Player {
     int deathInventoryi = 3;
     Skills skills;
 
-    public Player(org.bukkit.entity.Player player, double cash, int profitSkill){
+    public Player(org.bukkit.entity.Player player, double cash, int profitSkill, boolean creative, boolean protection){
         this.cash = cash;
-        skills = new Skills(profitSkill);
+        skills = new Skills(profitSkill, creative, protection);
         this.player = player;
         this.playerName = player.getName();
         scoreboard = new JPerPlayerMethodBasedScoreboard();
@@ -80,7 +80,7 @@ public class Player {
 
     public void updateScoreboard(String time){
         scoreboard.setLines(
-                player,"$" + Math.floor(this.cash),time
+                player,"$" + Math.floor(this.cash),time,"Weather Season: " + FarmersLife.weather,"Days Remaining: " + FarmersLife.dayNumber
         );
         scoreboard.updateScoreboard();
     }

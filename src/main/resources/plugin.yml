@@ -11,6 +11,8 @@ commands:
     description: All your farming goodies in the one place
   deathinventory:
     description: Get your inventory back from when you died or passed out
+  di:
+    description: Get your inventory back from when you died or passed out
   reloadshop:
     description: Reloads the shop file. Used to refresh prices and items on sale
   reloadscores:

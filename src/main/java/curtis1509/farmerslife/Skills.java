@@ -20,11 +20,13 @@ public class Skills {
     boolean creative;
     boolean isCreative = false;
     boolean protection;
+    boolean bedperk;
 
-    public Skills(int skillProfitsLevel, boolean creative, boolean protection) {
+    public Skills(int skillProfitsLevel, boolean creative, boolean protection, boolean bedperk) {
         this.skillProfits = new SkillProfits(skillProfitsLevel);
         this.creative = creative;
         this.protection = protection;
+        this.bedperk = bedperk;
         populateSkillsInventory();
     }
 
@@ -42,6 +44,12 @@ public class Skills {
                 "This is permanent and will be applied to any armour piece you craft."));
         else
             skillsInventory.addItem(createItem(Material.DIAMOND_CHESTPLATE, "Protection III",
+                    "UNLOCKED"));
+        if (!bedperk)
+            skillsInventory.addItem(createItem(Material.RED_BED, "Bed Perk | $20,000",
+                    "If you are within 100 blocks of your bed you will not pass out"));
+        else
+            skillsInventory.addItem(createItem(Material.RED_BED, "Bed Perk",
                     "UNLOCKED"));
     }
 
@@ -86,7 +94,7 @@ public class Skills {
             player.removeCash(42000);
             protection = true;
             protectArmour(player.getPlayer());
-            player.getPlayer().sendMessage("Congratulations! You now have Protection III unlocked!");
+            Bukkit.broadcastMessage("Congratulations to " + player.getPlayer().getName() + " for unlocking the permanent Protection III");
             player.getPlayer().playSound(player.getPlayer().getLocation(), Sound.BLOCK_ANVIL_USE, 3, 1);
             skillsInventory.setItem(2,createItem(Material.DIAMOND_CHESTPLATE, "Protection III",
                     "UNLOCKED"));
@@ -94,6 +102,21 @@ public class Skills {
         else
         {
             player.getPlayer().sendMessage("Sorry, you don't have enough money for Protection III. You need $" + (42000-player.getCash()) + " more");
+        }
+    }
+
+    public void buyBedPerk(curtis1509.farmerslife.Player player) {
+        if (player.getCash() >= 20000) {
+            player.removeCash(20000);
+            bedperk = true;
+            Bukkit.broadcastMessage("Congratulations to " + player.getPlayer().getName() + " for unlocking the bed perk!");
+            spawnFireworks(player.getPlayer().getLocation(),1);
+            skillsInventory.setItem(3,createItem(Material.RED_BED, "Bed Perk",
+                    "UNLOCKED"));
+        }
+        else
+        {
+            player.getPlayer().sendMessage("Sorry, you don't have enough money for Bed Perk. You need $" + (20000-player.getCash()) + " more");
         }
     }
 

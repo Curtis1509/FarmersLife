@@ -208,6 +208,7 @@ public class FileReader {
                 playerConfig.set(player.getName() + ".profit", player.getSkills().skillProfits.getLevel());
                 playerConfig.set(player.getName() + ".creative", player.getSkills().creative);
                 playerConfig.set(player.getName() + ".protection", player.getSkills().protection);
+                playerConfig.set(player.getName() + ".bedperk", player.getSkills().bedperk);
             }
             playerConfig.save(playersFileT);
 
@@ -306,6 +307,17 @@ public class FileReader {
             playerConfig.set(playerName + ".protection", false);
         }
         return protection;
+    }
+    public boolean loadBedPerk(String playerName) {
+        FileConfiguration playerConfig = YamlConfiguration.loadConfiguration(playersFileT);
+        boolean bedperk;
+        if (playerConfig.contains(playerName + ".bedperk"))
+            bedperk = playerConfig.getBoolean(playerName + ".bedperk");
+        else {
+            bedperk = false;
+            playerConfig.set(playerName + ".bedperk", false);
+        }
+        return bedperk;
     }
 }
 

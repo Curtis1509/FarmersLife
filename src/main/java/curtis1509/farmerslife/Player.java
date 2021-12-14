@@ -17,9 +17,9 @@ public class Player {
     int deathInventoryi = 3;
     Skills skills;
 
-    public Player(org.bukkit.entity.Player player, double cash, int profitSkill, boolean creative, boolean protection){
+    public Player(org.bukkit.entity.Player player, double cash, int profitSkill, boolean creative, boolean protection, boolean bedperk){
         this.cash = cash;
-        skills = new Skills(profitSkill, creative, protection);
+        skills = new Skills(profitSkill, creative, protection, bedperk);
         this.player = player;
         this.playerName = player.getName();
         scoreboard = new JPerPlayerMethodBasedScoreboard();

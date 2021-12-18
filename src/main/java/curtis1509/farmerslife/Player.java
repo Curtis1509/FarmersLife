@@ -16,6 +16,7 @@ public class Player {
     Inventory deathInventory;
     int deathInventoryi = 3;
     Skills skills;
+    double todaysCash = 0;
 
     public Player(org.bukkit.entity.Player player, double cash, int profitSkill, boolean creative, boolean protection, boolean bedperk){
         this.cash = cash;
@@ -29,6 +30,18 @@ public class Player {
         );
         scoreboard.addPlayer(player);
         scoreboard.updateScoreboard();
+    }
+
+    public double getTodaysCash(){
+        return todaysCash;
+    }
+
+    public void addToTodaysCash(double addCash){
+        todaysCash+=addCash;
+    }
+
+    public void resetTodaysCash(){
+        todaysCash=0;
     }
 
     public void reloadPlayerName(){

@@ -34,10 +34,10 @@ public class Skills {
         skillsInventory.addItem(createItem(Material.CHEST, "Profits " + (skillProfits.getLevel() + 1) + " | $" + (int) Math.ceil(skillProfits.cost),
                 "+0.1x | " + " Current: " + skillProfits.getMultiplier() + "x"));
         if (creative)
-            skillsInventory.addItem(createItem(Material.EMERALD, "Creative Mode",
+            skillsInventory.addItem(createItem(Material.FEATHER, "Fly Mode",
                     "OFF"));
         else
-            skillsInventory.addItem(createItem(Material.EMERALD, "Creative Mode | $1,000,000,000",
+            skillsInventory.addItem(createItem(Material.FEATHER, "Fly Mode | $1,000,000,000",
                     "Obtainable for the most hardcore farmers!"));
         if (!protection)
         skillsInventory.addItem(createItem(Material.DIAMOND_CHESTPLATE, "Protection III | $42,000",
@@ -56,13 +56,17 @@ public class Skills {
     public void toggleCreative(Player player) {
         isCreative = !isCreative;
         if (isCreative) {
-            skillsInventory.setItem(1,createItem(Material.EMERALD, "Creative Mode",
+            skillsInventory.setItem(1,createItem(Material.EMERALD, "Fly Mode",
                     "ON"));
-            player.setGameMode(GameMode.CREATIVE);
+            //player.setGameMode(GameMode.CREATIVE);
+            player.setAllowFlight(true);
+            player.setFlying(true);
         } else {
-            skillsInventory.setItem(1, createItem(Material.EMERALD, "Creative Mode",
+            skillsInventory.setItem(1, createItem(Material.EMERALD, "Fly Mode",
                     "OFF"));
-            player.setGameMode(GameMode.SURVIVAL);
+            player.setAllowFlight(false);
+            player.setFlying(false);
+            //player.setGameMode(GameMode.SURVIVAL);
         }
     }
 
@@ -71,14 +75,14 @@ public class Skills {
             player.removeCash(1000000000);
             creative = true;
             toggleCreative(player.getPlayer());
-            Bukkit.broadcastMessage("Attention all players! " + player.getName() + " has obtained creative mode! All hail our ruler " + player.getName());
+            Bukkit.broadcastMessage("Attention all players! " + player.getName() + " has obtained fly mode!");
             for (Player p : Bukkit.getOnlinePlayers()){
                 spawnFireworks(p.getLocation(),1);
             }
         }
         else
         {
-            player.getPlayer().sendMessage("Sorry, you don't have enough money to become a farming god. You need $" + (1000000000-player.getCash()) + " more");
+            player.getPlayer().sendMessage("Sorry, you don't have enough money to fly. You need $" + (1000000000-player.getCash()) + " more");
         }
     }
 

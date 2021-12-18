@@ -102,9 +102,9 @@ public class FileReader {
         }
 
         if (day <= 20)
-            FarmersLife.dayNumber = 20-day;
+            FarmersLife.dayNumber = 20 - day;
         else
-            FarmersLife.dayNumber = 40-day;
+            FarmersLife.dayNumber = 40 - day;
     }
 
     public void getWeather() throws IOException {
@@ -126,9 +126,9 @@ public class FileReader {
             weatherConfig.save(weatherFileT);
         }
         if (day <= 20)
-            FarmersLife.dayNumber = 20-day;
+            FarmersLife.dayNumber = 20 - day;
         else
-            FarmersLife.dayNumber = 40-day;
+            FarmersLife.dayNumber = 40 - day;
     }
 
     public void saveStats(long day, String playerName) throws IOException {
@@ -153,13 +153,9 @@ public class FileReader {
             statsConfig.save(statsFileT);
             stats.clear();
 
-            if (total > FarmersLife.bestCashAmount) {
-                if (FarmersLife.bestPlayerName.equals(playerName)) {
-                    FarmersLife.bestCashAmount += (int) Math.floor(total * multiplier);
-                } else {
-                    FarmersLife.bestCashAmount = (int) Math.floor(total * multiplier);
-                    FarmersLife.bestPlayerName = playerName;
-                }
+            for (Player p : FarmersLife.players) {
+                if (p.getName().equals(playerName))
+                    p.addToTodaysCash(total * multiplier);
             }
         }
     }
@@ -297,6 +293,7 @@ public class FileReader {
         }
         return creative;
     }
+
     public boolean loadProtection(String playerName) {
         FileConfiguration playerConfig = YamlConfiguration.loadConfiguration(playersFileT);
         boolean protection;
@@ -308,6 +305,7 @@ public class FileReader {
         }
         return protection;
     }
+
     public boolean loadBedPerk(String playerName) {
         FileConfiguration playerConfig = YamlConfiguration.loadConfiguration(playersFileT);
         boolean bedperk;

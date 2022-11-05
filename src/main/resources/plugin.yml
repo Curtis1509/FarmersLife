@@ -1,0 +1,16 @@
+name: FarmersLife
+version: '${project.version}'
+main: curtis1509.farmerslife.FarmersLife
+api-version: 1.19
+commands:
+  box:
+    description: Selects a chest to exchange crops for gold
+    usage: /box (Then select a chest)
+  farm:
+    description: All your farming goodies in the one place
+  deathinventory:
+    description: Get your inventory back from when you died or passed out
+  reloadshop:
+    description: Reloads the shop file. Used to refresh prices and items on sale
+  reloadscores:
+    description: Reloads all the scoreboards.

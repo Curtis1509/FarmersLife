@@ -1041,10 +1041,7 @@ public class FarmersLife extends JavaPlugin implements Listener, CommandExecutor
     }
 
     public curtis1509.farmerslife.Player getPlayer(String player) {
-        getLogger().info(player + " NAME");
         for (curtis1509.farmerslife.Player p : players) {
-
-            getLogger().info(player + " LOOP");
             if (p.getPlayer().getName().equals(player)) {
                 return p;
             }

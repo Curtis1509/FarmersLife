@@ -22,9 +22,7 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
-import org.bukkit.event.inventory.CraftItemEvent;
-import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.inventory.PrepareItemCraftEvent;
+import org.bukkit.event.inventory.*;
 import org.bukkit.event.player.*;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -52,7 +50,7 @@ public class FarmersLife extends JavaPlugin implements Listener, CommandExecutor
     public static Inventory menuInventory = Bukkit.createInventory(null, 9, "Farmers Life Menu");
     public static Inventory spawnerInventory = Bukkit.createInventory(null, 9, "Buy Spawners Inventory");
     public static Inventory seedsInventory = Bukkit.createInventory(null, 18, "Seeds");
-    public static Inventory buyInventory = Bukkit.createInventory(null, 18, "Buy");
+    public static Inventory buyInventory = Bukkit.createInventory(null, 9, "Buy");
     public static Inventory buyInventory2 = Bukkit.createInventory(null, 54, "Buy");
     public static Inventory teleportInventory = Bukkit.createInventory(null, 54, "Teleport HUB");
     public static LinkedList<DepositCrop> depositCrops = new LinkedList<>();
@@ -69,8 +67,8 @@ public class FarmersLife extends JavaPlugin implements Listener, CommandExecutor
             getLogger().log(Level.INFO, "Player " + player.getName() + " is logging in! Welcome to FarmLife!");
             boolean playerExists = false;
             for (curtis1509.farmerslife.Player fPlayer : players) {
-                if (fPlayer.getPlayer().getName().equals(fPlayer.getPlayer().getName())) {
-                    fPlayer.setPlayer(fPlayer.getPlayer());
+                if (fPlayer.getPlayer().getName().equals(player.getName())) {
+                    fPlayer.setPlayer(player);
                     playerExists = true;
                     fPlayer.reloadScoreboard();
                     fPlayer.scoreboard.updateScoreboard();
@@ -117,7 +115,7 @@ public class FarmersLife extends JavaPlugin implements Listener, CommandExecutor
         menuInventory = Bukkit.createInventory(null, 9, "Farmers Life Menu");
         spawnerInventory = Bukkit.createInventory(null, 9, "Buy Spawners Inventory");
         seedsInventory = Bukkit.createInventory(null, 18, "Seeds");
-        buyInventory = Bukkit.createInventory(null, 18, "Buy");
+        buyInventory = Bukkit.createInventory(null, 9, "Buy");
         buyInventory2 = Bukkit.createInventory(null, 54, "Buy");
         teleportInventory = Bukkit.createInventory(null, 54, "Teleport HUB");
         depositCrops = new LinkedList<>();
@@ -215,6 +213,24 @@ public class FarmersLife extends JavaPlugin implements Listener, CommandExecutor
 
     LinkedList<BuyItem> buyItems = new LinkedList<>();
 
+    public boolean isDepositBox(Location location) {
+        for (DepositBox box : depositBoxes) {
+            if (box.getDepositBox().getLocation().equals(location)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public DepositBox getDepositBox(Location location) {
+        for (DepositBox box : depositBoxes) {
+            if (box.getDepositBox().getLocation().equals(location)) {
+                return box;
+            }
+        }
+        return null;
+    }
+
     public Material getMaterial(String string) {
         for (Material material : Material.values()) {
             if (material.name().equals(string)) {
@@ -239,7 +255,7 @@ public class FarmersLife extends JavaPlugin implements Listener, CommandExecutor
     }
 
     public void loadShop() throws IOException {
-        buyInventory = Bukkit.createInventory(null, 18, "Buy - Items Change Daily");
+        buyInventory = Bukkit.createInventory(null, 9, "Buy - Items Change Daily");
         FileReader fileReader = new FileReader();
         String dataIn = "";
         try {
@@ -255,7 +271,7 @@ public class FarmersLife extends JavaPlugin implements Listener, CommandExecutor
         LinkedList<Material> items = new LinkedList<Material>();
         Random random;
 
-        while (items.size() < 10) {
+        while (items.size() < 9) {
             for (int i = 1; i < data.length; i++) {
                 String matName = data[i];
                 Material material = getMaterial(data[i]);
@@ -270,14 +286,10 @@ public class FarmersLife extends JavaPlugin implements Listener, CommandExecutor
                         addToInventory(buyInventory, material, price, amount);
                         items.add(material);
                     }
-/*                else if (i <= 90 * 3)
-                    addToInventory(buyInventory2, material, price, amount);*/
                 } else
                     getLogger().info(matName + " could not be identified");
             }
         }
-/*        addToInventory(buyInventory, Material.PAPER, "Next Page", "", 53);
-        addToInventory(buyInventory2, Material.STONE_BUTTON, "Previous Page", "", 53);*/
     }
 
     public void loadDepositShop() throws IOException {
@@ -499,6 +511,28 @@ public class FarmersLife extends JavaPlugin implements Listener, CommandExecutor
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
+
+        event.setCancelled(true);
+        if (Objects.requireNonNull(event.getClickedInventory()).getType() == InventoryType.CHEST && Objects.requireNonNull(event.getCurrentItem()).getType() == Material.AIR) {
+            if (isDepositBox(event.getClickedInventory().getLocation())) {
+                if (!containsItem(depositCrops, event.getWhoClicked().getItemOnCursor())) {
+                    getPlayer(getDepositBox(event.getClickedInventory().getLocation()).getOwner()).getPlayer().sendMessage("That item cannot be sold yet.");
+                } else
+                    event.setCancelled(false);
+            }
+        }
+        else if (event.isShiftClick() && event.getClickedInventory() != event.getWhoClicked().getOpenInventory().getTopInventory() && event.getWhoClicked().getOpenInventory().getTopInventory().getType() == InventoryType.CHEST) {
+            if (isDepositBox(event.getWhoClicked().getOpenInventory().getTopInventory().getLocation())) {
+                if (!containsItem(depositCrops, event.getCurrentItem())) {
+                    event.getWhoClicked().sendMessage("That item cannot be sold yet.");
+                } else
+                    event.setCancelled(false);
+            }
+        }
+        else{
+            event.setCancelled(false);
+        }
+
         try {
             Player player = (Player) event.getWhoClicked(); // The player that clicked the item
             ItemStack clicked = event.getCurrentItem(); // The item that was clicked
@@ -634,15 +668,14 @@ public class FarmersLife extends JavaPlugin implements Listener, CommandExecutor
                     assert clicked != null;
                     if (item.getMaterial() == clicked.getType()) {
                         for (curtis1509.farmerslife.Player p : players) {
-                            if (p.getPlayer() == event.getWhoClicked()) {
+                            if (p.getPlayer() == event.getWhoClicked() || Objects.equals(p.getName(), event.getWhoClicked().getName())) {
                                 if (p.getCash() >= item.getCost()) {
                                     if (getDeliveryBox(player) != null) {
                                         p.removeCash(item.getCost());
                                         ItemStack addingItem = new ItemStack(item.getMaterial(), item.getAmount());
                                         ItemMeta meta = event.getCurrentItem().getItemMeta();
                                         assert meta != null;
-                                        if (!meta.getDisplayName().contains("Pokeball"))
-                                            meta.setDisplayName("Shop " + addingItem.getType().name());
+                                        meta.setDisplayName("Shop " + addingItem.getType().name());
                                         meta.setLore(Collections.singletonList("Can only sell harvests from this item"));
                                         addingItem.setItemMeta(meta);
 
@@ -660,21 +693,6 @@ public class FarmersLife extends JavaPlugin implements Listener, CommandExecutor
                                 event.setCancelled(true);
                             }
                         }
-                    }
-                }
-                if (clicked.getType() == Material.STONE_BUTTON) {
-                    if (inventory == buyInventory2) {
-                        event.getWhoClicked().openInventory(buyInventory);
-                        event.setResult(Event.Result.DENY);
-                        event.setCancelled(true);
-                    }
-
-                }
-                if (clicked.getType() == Material.PAPER) {
-                    if (inventory == buyInventory) {
-                        event.setResult(Event.Result.DENY);
-                        event.setCancelled(true);
-                        event.getWhoClicked().openInventory(buyInventory2);
                     }
                 }
             }
@@ -696,10 +714,10 @@ public class FarmersLife extends JavaPlugin implements Listener, CommandExecutor
                 }
             }
             if (Objects.requireNonNull(Objects.requireNonNull(event.getCurrentItem()).getItemMeta()).getDisplayName().equals("Farmers Compass")) {
-                event.setCancelled(true);
+                if (!Objects.requireNonNull(Objects.requireNonNull(event.getClickedInventory()).getItem(8)).getItemMeta().getDisplayName().equals("Farmers Compass"))
+                    event.setCancelled(true);
             }
-        } catch (
-                NullPointerException e) {
+        } catch (NullPointerException ignored) {
         }
 
     }
@@ -724,13 +742,13 @@ public class FarmersLife extends JavaPlugin implements Listener, CommandExecutor
             if (Objects.requireNonNull(Objects.requireNonNull(event.getItem()).getItemMeta()).getDisplayName().equals("Farmers Compass") || Objects.requireNonNull(Objects.requireNonNull(event.getItem()).getItemMeta()).getDisplayName().equals("Farmers HUD")) {
                 event.getPlayer().openInventory(menuInventory);
             }
-        } catch (NullPointerException e) {
+        } catch (NullPointerException ignored) {
         }
     }
 
     @EventHandler
     public void onPlayerDropEvent(PlayerDropItemEvent event) {
-        if (Objects.requireNonNull(event.getItemDrop().getItemStack().getItemMeta()).getDisplayName().equals("Farmers Compass")) {
+        if (Objects.requireNonNull(event.getItemDrop().getItemStack().getItemMeta()).getDisplayName().equals("Farmers Compass") && event.getPlayer().getInventory().getItem(8) == null) {
             event.setCancelled(true);
         }
     }

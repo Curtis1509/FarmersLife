@@ -895,12 +895,11 @@ public class FarmersLife extends JavaPlugin implements Listener, CommandExecutor
                 double localMoney = itemWorth;
                 for (int j = 0; j < golemIronSoldToday; j++) {
                     if (itemStack.getType() == Material.IRON_BLOCK)
-                        localMoney*=0.91;
+                        localMoney *= 0.91;
                     else
                         localMoney *= 0.99;
                 }
                 money += localMoney;
-                getLogger().info("$ Per Iron: " + localMoney);
                 golemIronSoldToday++;
             }
             getPlayer(owner).golemIronSoldToday += golemIronSoldToday;
@@ -1042,7 +1041,10 @@ public class FarmersLife extends JavaPlugin implements Listener, CommandExecutor
     }
 
     public curtis1509.farmerslife.Player getPlayer(String player) {
+        getLogger().info(player + " NAME");
         for (curtis1509.farmerslife.Player p : players) {
+
+            getLogger().info(player + " LOOP");
             if (p.getPlayer().getName().equals(player)) {
                 return p;
             }
@@ -1241,7 +1243,7 @@ public class FarmersLife extends JavaPlugin implements Listener, CommandExecutor
                                 chest.getInventory().addItem(itemStack);
                             }
 
-                            if (box.isShipmentBox()) {
+                            if (box.isShipmentBox() && getPlayer(box.getOwner()) != null) {
                                 boolean itemsDelivered = false;
                                 for (ItemStack item : getPlayer(box.getOwner()).getDeliveryOrder()) {
                                     itemsDelivered = true;

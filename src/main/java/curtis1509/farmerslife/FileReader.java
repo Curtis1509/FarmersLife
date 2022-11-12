@@ -190,7 +190,6 @@ public class FileReader {
                 double previousCash = playerConfig.getDouble("alltimecash");
                 playerConfig.set(player.getName() + ".alltimecash", player.getCash() + previousCash);
                 playerConfig.set(player.getName() + ".profit", player.getSkills().skillProfits.getLevel());
-                playerConfig.set(player.getName() + ".creative", player.getSkills().creative);
                 playerConfig.set(player.getName() + ".protection", player.getSkills().protection);
                 playerConfig.set(player.getName() + ".bedperk", player.getSkills().bedperk);
             }
@@ -232,18 +231,6 @@ public class FileReader {
         } catch (NullPointerException e) {
             getLogger().info("Deposit Box File has no contents");
         }
-    }
-
-    public boolean loadCreative(String playerName) {
-        FileConfiguration playerConfig = YamlConfiguration.loadConfiguration(playersFileT);
-        boolean creative;
-        if (playerConfig.contains(playerName + ".creative"))
-            creative = playerConfig.getBoolean(playerName + ".creative");
-        else {
-            creative = false;
-            playerConfig.set(playerName + ".creative", false);
-        }
-        return creative;
     }
 
     public boolean loadProtection(String playerName) {

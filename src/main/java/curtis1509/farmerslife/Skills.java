@@ -18,15 +18,12 @@ public class Skills {
 
     public Inventory skillsInventory = Bukkit.createInventory(null, 18, "Skills");
     SkillProfits skillProfits;
-    boolean creative;
-    boolean isCreative = false;
     boolean protection;
     boolean bedperk;
     boolean teleport;
 
-    public Skills(int skillProfitsLevel, boolean creative, boolean protection, boolean bedperk, boolean teleport, Player player) {
+    public Skills(int skillProfitsLevel, boolean protection, boolean bedperk, boolean teleport, Player player) {
         this.skillProfits = new SkillProfits(skillProfitsLevel);
-        this.creative = creative;
         this.protection = protection;
         this.bedperk = bedperk;
         this.teleport = teleport;
@@ -36,12 +33,6 @@ public class Skills {
     public void populateSkillsInventory(Player player) {
         skillsInventory.addItem(createItem(Material.CHEST, "Profits " + (skillProfits.getLevel() + 1) + " | $" + (int) Math.ceil(skillProfits.cost),
                 "+0.1x | " + " Current: " + skillProfits.getMultiplier() + "x"));
-        if (creative)
-            skillsInventory.addItem(createItem(Material.FEATHER, "Fly Mode",
-                    "OFF"));
-        else
-            skillsInventory.addItem(createItem(Material.FEATHER, "Fly Mode | $1,000,000,000",
-                    "Obtainable for the most hardcore farmers!"));
         if (!protection)
             skillsInventory.addItem(createItem(Material.DIAMOND_CHESTPLATE, "Protection III | $42,000",
                     "This is permanent and will be applied to any armour piece you craft."));
@@ -68,23 +59,6 @@ public class Skills {
             skillsInventory.addItem(createItem(Material.APPLE, "+1 Heart | $"  + (int)Math.ceil(cost), health+1 + "/30 Hearts"));
         else
             skillsInventory.addItem(createItem(Material.APPLE, "MAXIMUM HEALTH REACHED", health + "/30 Hearts"));
-    }
-
-    public void toggleCreative(Player player) {
-        isCreative = !isCreative;
-        if (isCreative) {
-            skillsInventory.setItem(1, createItem(Material.EMERALD, "Fly Mode",
-                    "ON"));
-            //player.setGameMode(GameMode.CREATIVE);
-            player.setAllowFlight(true);
-            player.setFlying(true);
-        } else {
-            skillsInventory.setItem(1, createItem(Material.EMERALD, "Fly Mode",
-                    "OFF"));
-            player.setAllowFlight(false);
-            player.setFlying(false);
-            //player.setGameMode(GameMode.SURVIVAL);
-        }
     }
 
     public boolean buyHeart(Player player) {
@@ -114,20 +88,6 @@ public class Skills {
         } else
             player.sendMessage("Sorry, you don't have enough money to buy more health.");
         return false;
-    }
-
-    public void buyCreative(curtis1509.farmerslife.Player player) {
-        if (player.getCash() >= 1000000000) {
-            player.removeCash(1000000000);
-            creative = true;
-            toggleCreative(player.getPlayer());
-            Bukkit.broadcastMessage("Attention all players! " + player.getName() + " has obtained fly mode!");
-            for (Player p : Bukkit.getOnlinePlayers()) {
-                spawnFireworks(p.getLocation(), 1);
-            }
-        } else {
-            player.getPlayer().sendMessage("Sorry, you don't have enough money to fly. You need $" + (1000000000 - player.getCash()) + " more");
-        }
     }
 
     public void protectArmour(Player player) {
@@ -191,10 +151,6 @@ public class Skills {
         itemMeta.setLore(Collections.singletonList(description));
         item.setItemMeta(itemMeta);
         return item;
-    }
-
-    public boolean hasCreative() {
-        return creative;
     }
 
 }

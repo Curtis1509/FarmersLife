@@ -22,8 +22,8 @@ public class Player {
     double todaysCash = 0;
     LinkedList<ItemStack> deliveryOrder = new LinkedList<ItemStack>();
 
-    public Player(org.bukkit.entity.Player player, int profitSkill, boolean creative, boolean protection, boolean bedperk, boolean teleport) {
-        skills = new Skills(profitSkill, creative, protection, bedperk, teleport, player);
+    public Player(org.bukkit.entity.Player player, int profitSkill, boolean protection, boolean bedperk, boolean teleport) {
+        skills = new Skills(profitSkill, protection, bedperk, teleport, player);
         this.player = player;
         this.playerName = player.getName();
         scoreboard = new JPerPlayerMethodBasedScoreboard();

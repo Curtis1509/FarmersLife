@@ -79,7 +79,7 @@ public class FarmersLife extends JavaPlugin implements Listener, CommandExecutor
             }
             player.sendTitle(ChatColor.GOLD + "Farmers Life", ChatColor.BLUE + weather + " Season");
             if (!playerExists) {
-                players.add(new curtis1509.farmerslife.Player(player, fileReader.loadPlayerSkillProfits(player.getName()), fileReader.loadCreative(player.getName()), fileReader.loadProtection(player.getName()), fileReader.loadBedPerk(player.getName()), fileReader.loadPerk(player.getName(), "teleport")));
+                players.add(new curtis1509.farmerslife.Player(player, fileReader.loadPlayerSkillProfits(player.getName()), fileReader.loadProtection(player.getName()), fileReader.loadBedPerk(player.getName()), fileReader.loadPerk(player.getName(), "teleport")));
                 player.sendMessage("Welcome to FarmersLife!");
             } else {
                 player.sendMessage("Welcome back to FarmersLife!");
@@ -170,13 +170,6 @@ public class FarmersLife extends JavaPlugin implements Listener, CommandExecutor
         itemMeta = item.getItemMeta();
         itemMeta.setDisplayName("Crates & Keys");
         itemMeta.setLore(Collections.singletonList("Coming Soon"));
-        item.setItemMeta(itemMeta);
-        menuInventory.setItem(5, item);
-
-        item = new ItemStack(Material.FEATHER, 1);
-        itemMeta = item.getItemMeta();
-        itemMeta.setDisplayName("Flying Feather $10,000");
-        itemMeta.setLore(Collections.singletonList("Right Click to enable flight. $20 / second"));
         item.setItemMeta(itemMeta);
         menuInventory.setItem(6, item);
 
@@ -395,7 +388,7 @@ public class FarmersLife extends JavaPlugin implements Listener, CommandExecutor
         }
         event.getPlayer().sendTitle(ChatColor.GOLD + "Farmers Life", ChatColor.BLUE + weather + " Season");
         if (!playerExists) {
-            players.add(new curtis1509.farmerslife.Player(event.getPlayer(), fileReader.loadPlayerSkillProfits(event.getPlayer().getName()), fileReader.loadCreative(event.getPlayer().getName()), fileReader.loadProtection(event.getPlayer().getName()), fileReader.loadBedPerk(event.getPlayer().getName()), fileReader.loadPerk(event.getPlayer().getName(), "teleport")));
+            players.add(new curtis1509.farmerslife.Player(event.getPlayer(), fileReader.loadPlayerSkillProfits(event.getPlayer().getName()), fileReader.loadProtection(event.getPlayer().getName()), fileReader.loadBedPerk(event.getPlayer().getName()), fileReader.loadPerk(event.getPlayer().getName(), "teleport")));
             event.getPlayer().sendMessage("Welcome to FarmersLife!");
         } else {
             event.getPlayer().sendMessage("Welcome back to FarmersLife!");
@@ -521,12 +514,6 @@ public class FarmersLife extends JavaPlugin implements Listener, CommandExecutor
                                 p.getSkills().populateSkillsInventory(player);
                                 ((Player) event.getWhoClicked()).playSound(event.getWhoClicked().getLocation(), Sound.BLOCK_NOTE_BLOCK_CHIME, 1, 1);
                             }
-                        } else if (event.getCurrentItem().getType() == Material.FEATHER) {
-                            event.setCancelled(true);
-                            if (!p.getSkills().hasCreative())
-                                p.getSkills().buyCreative(p);
-                            else
-                                p.getSkills().toggleCreative(p.getPlayer());
                         } else if (event.getCurrentItem().getType() == Material.DIAMOND_CHESTPLATE) {
                             event.setCancelled(true);
                             if (!p.getSkills().protection)
@@ -600,12 +587,6 @@ public class FarmersLife extends JavaPlugin implements Listener, CommandExecutor
                                 event.getWhoClicked().sendMessage("You don't have enough money for a card pack");
                             }
                         }
-                    }
-                } else if (clicked.getType() == Material.FEATHER) {
-                    event.setCancelled(true);
-                    if (economy.getBalance(((Player) event.getWhoClicked()).getPlayer()) > 10000) {
-                        economy.withdrawPlayer(((Player) event.getWhoClicked()).getPlayer(), 10000);
-                        giveFlyingFeather(((Player) event.getWhoClicked()).getPlayer());
                     }
                 } else if (clicked.getType() == Material.PLAYER_HEAD) {
                     event.setCancelled(true);
@@ -737,33 +718,11 @@ public class FarmersLife extends JavaPlugin implements Listener, CommandExecutor
         }
     }
 
-    public void giveFlyingFeather(Player player) {
-        ItemStack flyingFeather = new ItemStack(Material.FEATHER, 1);
-        ItemMeta meta = flyingFeather.getItemMeta();
-        meta.setDisplayName("Flying Feather");
-        meta.setLore(Collections.singletonList("Right Click To Toggle Flight. $20 per second"));
-        flyingFeather.setItemMeta(meta);
-        player.getInventory().addItem(flyingFeather);
-    }
-
     @EventHandler
     public void onPlayerRightClick(PlayerInteractEvent event) {
         try {
             if (Objects.requireNonNull(Objects.requireNonNull(event.getItem()).getItemMeta()).getDisplayName().equals("Farmers Compass") || Objects.requireNonNull(Objects.requireNonNull(event.getItem()).getItemMeta()).getDisplayName().equals("Farmers HUD")) {
                 event.getPlayer().openInventory(menuInventory);
-            }
-            if (Objects.requireNonNull(Objects.requireNonNull(event.getItem()).getItemMeta()).getDisplayName().equals("Flying Feather")) {
-                if (!event.getPlayer().isFlying() && !event.getPlayer().getAllowFlight() && (economy.getBalance(event.getPlayer()) > 5)) {
-                    event.getPlayer().sendMessage("Flying Enabled");
-                    event.getPlayer().setAllowFlight(true);
-                    event.getPlayer().setFlying(true);
-                } else if (event.getPlayer().isFlying() || event.getPlayer().getAllowFlight()) {
-                    event.getPlayer().sendMessage("Flying Disabled");
-                    event.getPlayer().setAllowFlight(false);
-                    event.getPlayer().setFlying(false);
-                } else {
-                    event.getPlayer().sendMessage("You need at least $5 to fly");
-                }
             }
         } catch (NullPointerException e) {
         }
@@ -1078,13 +1037,6 @@ public class FarmersLife extends JavaPlugin implements Listener, CommandExecutor
             public void run() {
                 for (curtis1509.farmerslife.Player player : players) {
                     player.updateScoreboard(getTime());
-                    if (player.player.isFlying() && !player.getSkills().hasCreative()) {
-                        economy.withdrawPlayer(player.player, 1);
-                        if (economy.getBalance(player.player) < 5) {
-                            player.player.setFlying(false);
-                            player.player.sendMessage("You don't have enough money to continue flying");
-                        }
-                    }
                 }
                 long time = world.getTime();
                 if (time > 15000 && Bukkit.getOnlinePlayers().size() > 1) {

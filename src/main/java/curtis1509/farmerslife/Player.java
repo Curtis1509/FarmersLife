@@ -3,6 +3,9 @@ package curtis1509.farmerslife;
 import dev.jcsoftware.jscoreboards.JPerPlayerMethodBasedScoreboard;
 import dev.jcsoftware.jscoreboards.JScoreboardTeam;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
+
+import java.util.LinkedList;
 
 import static org.bukkit.Bukkit.getLogger;
 
@@ -13,21 +16,30 @@ public class Player {
     JScoreboardTeam team;
     org.bukkit.entity.Player player;
     Inventory deathInventory;
+    int golemIronSoldToday = 0;
     int deathInventoryi = 3;
     Skills skills;
     double todaysCash = 0;
+    LinkedList<ItemStack> deliveryOrder = new LinkedList<ItemStack>();
 
-    public Player(org.bukkit.entity.Player player, double cash, int profitSkill, boolean creative, boolean protection, boolean bedperk, boolean teleport) {
-        skills = new Skills(profitSkill, creative, protection, bedperk, teleport);
+    public Player(org.bukkit.entity.Player player, int profitSkill, boolean creative, boolean protection, boolean bedperk, boolean teleport) {
+        skills = new Skills(profitSkill, creative, protection, bedperk, teleport, player);
         this.player = player;
         this.playerName = player.getName();
         scoreboard = new JPerPlayerMethodBasedScoreboard();
-        scoreboard.setTitle(player, "Farmers HUD");
+        scoreboard.setTitle(player, "&aFarmers HUD");
         scoreboard.setLines(
-                player, "$" + cash
+                player, "&6$" + FarmersLife.economy.getBalance(player)
         );
         scoreboard.addPlayer(player);
         scoreboard.updateScoreboard();
+    }
+
+    public LinkedList<ItemStack> getDeliveryOrder(){
+        return deliveryOrder;
+    }
+    public void addDelivery(ItemStack itemStack){
+        deliveryOrder.add(itemStack);
     }
 
     public double getTodaysCash() {
@@ -48,9 +60,9 @@ public class Player {
 
     public void reloadScoreboard() {
         scoreboard = new JPerPlayerMethodBasedScoreboard();
-        scoreboard.setTitle(player, "Farmers HUD");
+        scoreboard.setTitle(player, "&aFarmers HUD");
         scoreboard.setLines(
-                player, "$" + FarmersLife.economy.getBalance(player)
+                player, "&6$" + FarmersLife.economy.getBalance(player)
         );
         scoreboard.addPlayer(player);
         scoreboard.updateScoreboard();
@@ -80,7 +92,7 @@ public class Player {
     public void removeCash(double amount) {
         FarmersLife.economy.withdrawPlayer(player, amount);
         scoreboard.setLines(
-                player, "$" + FarmersLife.economy.getBalance(player)
+                player, "&a$&6" + FarmersLife.economy.getBalance(player)
         );
         scoreboard.updateScoreboard();
     }
@@ -91,7 +103,7 @@ public class Player {
 
     public void updateScoreboard(String time) {
         scoreboard.setLines(
-                player, "$" + Math.floor(FarmersLife.economy.getBalance(player)), time, "Weather Season: " + FarmersLife.weather, "Days Remaining: " + FarmersLife.dayNumber
+                player, "&6$" + Math.floor(FarmersLife.economy.getBalance(player)), time, "Weather Season: &6" + FarmersLife.weather, "Days Remaining: &6" + FarmersLife.dayNumber
         );
         scoreboard.updateScoreboard();
     }

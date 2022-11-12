@@ -17,7 +17,6 @@ import static org.bukkit.Bukkit.getLogger;
 
 public class FileReader {
 
-    //Just loads the entire file into a string to be later split down in the main class.
     public String read(String filename) {
 
         StringBuilder processString = new StringBuilder();
@@ -201,6 +200,7 @@ public class FileReader {
             for (DepositBox deposits : FarmersLife.depositBoxes) {
                 String id = "deposits." + deposits.getID();
                 depositConfig.set(id + ".owner", deposits.getOwner());
+                depositConfig.set(id + ".shipment", deposits.isShipmentBox());
                 depositConfig.set(id + ".x", deposits.getDepositBox().getLocation().getBlockX());
                 depositConfig.set(id + ".y", deposits.getDepositBox().getLocation().getBlockY());
                 depositConfig.set(id + ".z", deposits.getDepositBox().getLocation().getBlockZ());
@@ -211,8 +211,6 @@ public class FileReader {
 
         } catch (IOException e) {
             e.printStackTrace();
-
-
         }
     }
 
@@ -227,8 +225,9 @@ public class FileReader {
                 int id = Integer.parseInt(child);
                 Location location = new Location(FarmersLife.world, depositConfig.getInt("deposits." + child + ".x"), depositConfig.getInt("deposits." + child + ".y"), depositConfig.getInt("deposits." + child + ".z"));
                 String owner = depositConfig.getString("deposits." + child + ".owner");
+                boolean shipment = depositConfig.getBoolean("deposits." + child + ".shipment");
                 Block chest = location.getBlock();
-                FarmersLife.depositBoxes.add(new DepositBox(chest, owner, id));
+                FarmersLife.depositBoxes.add(new DepositBox(chest, owner, id,shipment));
             }
         } catch (NullPointerException e) {
             getLogger().info("Deposit Box File has no contents");

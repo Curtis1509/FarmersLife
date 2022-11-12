@@ -1,6 +1,7 @@
 package curtis1509.farmerslife;
 
 import org.bukkit.*;
+import org.bukkit.attribute.Attribute;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Firework;
@@ -23,16 +24,16 @@ public class Skills {
     boolean bedperk;
     boolean teleport;
 
-    public Skills(int skillProfitsLevel, boolean creative, boolean protection, boolean bedperk, boolean teleport) {
+    public Skills(int skillProfitsLevel, boolean creative, boolean protection, boolean bedperk, boolean teleport, Player player) {
         this.skillProfits = new SkillProfits(skillProfitsLevel);
         this.creative = creative;
         this.protection = protection;
         this.bedperk = bedperk;
         this.teleport = teleport;
-        populateSkillsInventory();
+        populateSkillsInventory(player);
     }
 
-    public void populateSkillsInventory() {
+    public void populateSkillsInventory(Player player) {
         skillsInventory.addItem(createItem(Material.CHEST, "Profits " + (skillProfits.getLevel() + 1) + " | $" + (int) Math.ceil(skillProfits.cost),
                 "+0.1x | " + " Current: " + skillProfits.getMultiplier() + "x"));
         if (creative)
@@ -42,8 +43,8 @@ public class Skills {
             skillsInventory.addItem(createItem(Material.FEATHER, "Fly Mode | $1,000,000,000",
                     "Obtainable for the most hardcore farmers!"));
         if (!protection)
-        skillsInventory.addItem(createItem(Material.DIAMOND_CHESTPLATE, "Protection III | $42,000",
-                "This is permanent and will be applied to any armour piece you craft."));
+            skillsInventory.addItem(createItem(Material.DIAMOND_CHESTPLATE, "Protection III | $42,000",
+                    "This is permanent and will be applied to any armour piece you craft."));
         else
             skillsInventory.addItem(createItem(Material.DIAMOND_CHESTPLATE, "Protection III",
                     "UNLOCKED"));
@@ -53,12 +54,26 @@ public class Skills {
         else
             skillsInventory.addItem(createItem(Material.RED_BED, "Bed Perk",
                     "UNLOCKED"));
+
+
+        int health = (int) (player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue() / 2);
+        double iterations = health - 10;
+        double cost = 10000;
+        for (int i = 0; i < iterations; i++) {
+            cost += 1000;
+            cost *= 1.05;
+        }
+
+        if (player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue() < 60)
+            skillsInventory.addItem(createItem(Material.APPLE, "+1 Heart | $"  + (int)Math.ceil(cost), health+1 + "/30 Hearts"));
+        else
+            skillsInventory.addItem(createItem(Material.APPLE, "MAXIMUM HEALTH REACHED", health + "/30 Hearts"));
     }
 
     public void toggleCreative(Player player) {
         isCreative = !isCreative;
         if (isCreative) {
-            skillsInventory.setItem(1,createItem(Material.EMERALD, "Fly Mode",
+            skillsInventory.setItem(1, createItem(Material.EMERALD, "Fly Mode",
                     "ON"));
             //player.setGameMode(GameMode.CREATIVE);
             player.setAllowFlight(true);
@@ -72,23 +87,50 @@ public class Skills {
         }
     }
 
+    public boolean buyHeart(Player player) {
+        int health = (int) (player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue() / 2);
+        double iterations = health - 10;
+        double cost = 10000;
+        for (int i = 0; i < iterations; i++) {
+            cost += 1000;
+            cost *= 1.05;
+        }
+
+        if (FarmersLife.economy.getBalance(player) > cost) {
+            if (player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue() < 60) {
+                FarmersLife.economy.withdrawPlayer(player, cost);
+                player.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(health*2 + 2);
+                skillsInventory.remove(Material.APPLE);
+                cost += 1000;
+                cost *= 1.05;
+                if (player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue() < 60)
+                    skillsInventory.addItem(createItem(Material.APPLE, "+1 Heart | $" + (int)Math.ceil(cost), health+1 + "/30 Hearts"));
+                else
+                    skillsInventory.addItem(createItem(Material.APPLE, "MAXIMUM HEALTH REACHED", health+1 + "/30 Hearts"));
+                spawnFireworks(player.getLocation(),1);
+                player.setHealth(player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue());
+                return true;
+            } else player.sendMessage("You have the maximum 30/30 hearts");
+        } else
+            player.sendMessage("Sorry, you don't have enough money to buy more health.");
+        return false;
+    }
+
     public void buyCreative(curtis1509.farmerslife.Player player) {
         if (player.getCash() >= 1000000000) {
             player.removeCash(1000000000);
             creative = true;
             toggleCreative(player.getPlayer());
             Bukkit.broadcastMessage("Attention all players! " + player.getName() + " has obtained fly mode!");
-            for (Player p : Bukkit.getOnlinePlayers()){
-                spawnFireworks(p.getLocation(),1);
+            for (Player p : Bukkit.getOnlinePlayers()) {
+                spawnFireworks(p.getLocation(), 1);
             }
-        }
-        else
-        {
-            player.getPlayer().sendMessage("Sorry, you don't have enough money to fly. You need $" + (1000000000-player.getCash()) + " more");
+        } else {
+            player.getPlayer().sendMessage("Sorry, you don't have enough money to fly. You need $" + (1000000000 - player.getCash()) + " more");
         }
     }
 
-    public void protectArmour(Player player){
+    public void protectArmour(Player player) {
         Objects.requireNonNull(player.getInventory().getChestplate()).addEnchantment(Enchantment.PROTECTION_ENVIRONMENTAL, 3);
         Objects.requireNonNull(player.getInventory().getLeggings()).addEnchantment(Enchantment.PROTECTION_ENVIRONMENTAL, 3);
         Objects.requireNonNull(player.getInventory().getHelmet()).addEnchantment(Enchantment.PROTECTION_ENVIRONMENTAL, 3);
@@ -102,12 +144,10 @@ public class Skills {
             protectArmour(player.getPlayer());
             Bukkit.broadcastMessage("Congratulations to " + player.getPlayer().getName() + " for unlocking the permanent Protection III");
             player.getPlayer().playSound(player.getPlayer().getLocation(), Sound.BLOCK_ANVIL_USE, 3, 1);
-            skillsInventory.setItem(2,createItem(Material.DIAMOND_CHESTPLATE, "Protection III",
+            skillsInventory.setItem(2, createItem(Material.DIAMOND_CHESTPLATE, "Protection III",
                     "UNLOCKED"));
-        }
-        else
-        {
-            player.getPlayer().sendMessage("Sorry, you don't have enough money for Protection III. You need $" + (42000-player.getCash()) + " more");
+        } else {
+            player.getPlayer().sendMessage("Sorry, you don't have enough money for Protection III. You need $" + (42000 - player.getCash()) + " more");
         }
     }
 
@@ -116,17 +156,15 @@ public class Skills {
             player.removeCash(20000);
             bedperk = true;
             Bukkit.broadcastMessage("Congratulations to " + player.getPlayer().getName() + " for unlocking the bed perk!");
-            spawnFireworks(player.getPlayer().getLocation(),1);
-            skillsInventory.setItem(3,createItem(Material.RED_BED, "Bed Perk",
+            spawnFireworks(player.getPlayer().getLocation(), 1);
+            skillsInventory.setItem(3, createItem(Material.RED_BED, "Bed Perk",
                     "UNLOCKED"));
-        }
-        else
-        {
-            player.getPlayer().sendMessage("Sorry, you don't have enough money for Bed Perk. You need $" + (20000-player.getCash()) + " more");
+        } else {
+            player.getPlayer().sendMessage("Sorry, you don't have enough money for Bed Perk. You need $" + (20000 - player.getCash()) + " more");
         }
     }
 
-    public static void spawnFireworks(Location location, int amount){
+    public static void spawnFireworks(Location location, int amount) {
         Location loc = location;
         location.setY(loc.getY() + 4);
         Firework fw = (Firework) loc.getWorld().spawnEntity(loc, EntityType.FIREWORK);
@@ -139,7 +177,7 @@ public class Skills {
         fw.setInvulnerable(true);
         fw.detonate();
 
-        for(int i = 0;i<amount; i++){
+        for (int i = 0; i < amount; i++) {
             Firework fw2 = (Firework) loc.getWorld().spawnEntity(loc, EntityType.FIREWORK);
             fw2.setFireworkMeta(fwm);
         }

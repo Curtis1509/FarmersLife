@@ -512,25 +512,25 @@ public class FarmersLife extends JavaPlugin implements Listener, CommandExecutor
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
 
-        event.setCancelled(true);
-        if (Objects.requireNonNull(event.getClickedInventory()).getType() == InventoryType.CHEST && Objects.requireNonNull(event.getCurrentItem()).getType() == Material.AIR) {
-            if (isDepositBox(event.getClickedInventory().getLocation())) {
-                if (!containsItem(depositCrops, event.getWhoClicked().getItemOnCursor())) {
-                    getPlayer(getDepositBox(event.getClickedInventory().getLocation()).getOwner()).getPlayer().sendMessage("That item cannot be sold yet.");
-                } else
-                    event.setCancelled(false);
+        try {
+            if (Objects.requireNonNull(event.getClickedInventory()).getType() == InventoryType.CHEST && Objects.requireNonNull(event.getCurrentItem()).getType() == Material.AIR) {
+                if (isDepositBox(event.getClickedInventory().getLocation())) {
+                    event.setCancelled(true);
+                    if (!containsItem(depositCrops, event.getWhoClicked().getItemOnCursor())) {
+                        getPlayer(getDepositBox(event.getClickedInventory().getLocation()).getOwner()).getPlayer().sendMessage("That item cannot be sold yet.");
+                    } else
+                        event.setCancelled(false);
+                }
+            } else if (event.isShiftClick() && event.getClickedInventory() != event.getWhoClicked().getOpenInventory().getTopInventory() && event.getWhoClicked().getOpenInventory().getTopInventory().getType() == InventoryType.CHEST) {
+                if (isDepositBox(event.getWhoClicked().getOpenInventory().getTopInventory().getLocation())) {
+                    event.setCancelled(true);
+                    if (!containsItem(depositCrops, event.getCurrentItem())) {
+                        event.getWhoClicked().sendMessage("That item cannot be sold yet.");
+                    } else
+                        event.setCancelled(false);
+                }
             }
-        }
-        else if (event.isShiftClick() && event.getClickedInventory() != event.getWhoClicked().getOpenInventory().getTopInventory() && event.getWhoClicked().getOpenInventory().getTopInventory().getType() == InventoryType.CHEST) {
-            if (isDepositBox(event.getWhoClicked().getOpenInventory().getTopInventory().getLocation())) {
-                if (!containsItem(depositCrops, event.getCurrentItem())) {
-                    event.getWhoClicked().sendMessage("That item cannot be sold yet.");
-                } else
-                    event.setCancelled(false);
-            }
-        }
-        else{
-            event.setCancelled(false);
+        } catch (NullPointerException ignored) {
         }
 
         try {
@@ -992,6 +992,7 @@ public class FarmersLife extends JavaPlugin implements Listener, CommandExecutor
                 p.storeInventory(removedInventory);
         }
 
+        getPlayer(event.getEntity()).deathInventoryi = 3;
         event.getEntity().sendMessage("Oh no! You were knocked out unconscious and lost some items");
         sendClickableCommand(event.getEntity(), "Click to &2[GET] &f some of your lost items back", "deathinventory");
         giveCompass(event.getEntity());
@@ -1234,12 +1235,12 @@ public class FarmersLife extends JavaPlugin implements Listener, CommandExecutor
                                 bestPlayerName = player.getName();
                             }
                         }
-                        player.getPlayer().sendMessage("You made $" + player.getTodaysCash() + " yesterday");
+                        player.getPlayer().sendMessage("You made $" + (int) Math.floor(player.getTodaysCash()) + " yesterday");
                         player.resetTodaysCash();
                     }
 
                     if (!bestPlayerName.equals("") && bestCashAmount > 0)
-                        Bukkit.broadcastMessage("Well done to " + bestPlayerName + " for making the most money yesterday for a total of $" + bestCashAmount);
+                        broadcast("Well done to " + bestPlayerName + " for making the most money yesterday for a total of $" + (int) Math.floor(bestCashAmount));
                     bestPlayerName = "";
                     bestCashAmount = 0;
 
@@ -1253,6 +1254,12 @@ public class FarmersLife extends JavaPlugin implements Listener, CommandExecutor
                 }
             }
         }, 1, 1);
+    }
+
+    public void broadcast(String message) {
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            player.sendMessage(message);
+        }
     }
 
     public String bestPlayerName = "";

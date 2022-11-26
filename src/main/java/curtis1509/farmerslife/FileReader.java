@@ -2,6 +2,7 @@ package curtis1509.farmerslife;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -268,5 +269,72 @@ public class FileReader {
         }
         return perk;
     }
+
+    public void loadBuyShop(){
+        FileConfiguration shopConfig = YamlConfiguration.loadConfiguration(new File("plugins/FarmersLife/shop.yml"));
+        int itemSlots = shopConfig.getInt("slots");
+        Set<String> items = Objects.requireNonNull(shopConfig.getConfigurationSection("items")).getKeys(false);
+        double defaultShopChance = shopConfig.getDouble("shopchance");
+        double defaultSpecialChance = shopConfig.getDouble("specialchance");
+        double defaultFreeChance = shopConfig.getDouble("freechance");
+        FarmersLife.buyInventory = Bukkit.createInventory(null, itemSlots, "Farmers Daily Shop");
+        LinkedList<Material> selectedMaterials = new LinkedList<Material>();
+        Random random = new Random();
+        int failedItems = 0;
+        while (selectedMaterials.size() < itemSlots && selectedMaterials.size() < items.size()-failedItems){
+            failedItems = 0;
+            getLogger().info(selectedMaterials.size() + " | " + items.size());
+            for (String item : items){
+                Material material = FarmersLife.getMaterial(item);
+                if (material != null){
+                    if (!selectedMaterials.contains(material)) {
+                        double shopChance = defaultShopChance;
+                        if (shopConfig.contains("items." + item + ".shopchance"))
+                            shopChance = shopConfig.getDouble("items." + item + ".shopchance");
+                        int chance = random.nextInt(1 + items.size() - selectedMaterials.size());
+                        boolean picked = false;
+                        if (chance == 1) {
+                            if (shopChance < 1) {
+                                double confirmSelect = random.nextDouble(1);
+                                picked = !(confirmSelect > shopChance);
+                            } else
+                                picked = true;
+                        }
+
+                        if (picked) {
+                            double specialChance = defaultSpecialChance;
+                            double freeChance = defaultFreeChance;
+                            int amount = shopConfig.getInt("items." + item + ".amount");
+
+                            if (shopConfig.contains("items." + item + ".specialchance"))
+                                shopChance = shopConfig.getDouble("items." + item + ".specialchance");
+                            if (shopConfig.contains("items." + item + ".freechance"))
+                                shopChance = shopConfig.getDouble("items." + item + ".freechance");
+
+                            int cost = shopConfig.getInt("items." + item + ".cost");
+                            int originalCost = cost;
+                            boolean isSpecial = false;
+                            if (shopConfig.contains("items." + item + ".special")) {
+                                int special = shopConfig.getInt("items." + item + ".special");
+                                double doSpecial = random.nextDouble(1);
+                                if (!(doSpecial > specialChance)) {
+                                    cost = special;
+                                    isSpecial = true;
+                                }
+                            }
+
+                            FarmersLife.addToInventory(FarmersLife.buyInventory, material, cost, amount,isSpecial,originalCost-cost);
+                            selectedMaterials.add(material);
+                        }
+                    }
+
+                }else {
+                    getLogger().info(item + " could not be identified");
+                    failedItems++;
+                }
+            }
+        }
+    }
+
 }
 

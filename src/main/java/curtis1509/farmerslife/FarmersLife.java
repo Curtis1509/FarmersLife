@@ -10,6 +10,8 @@ import org.bukkit.block.data.Ageable;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.*;
 import org.bukkit.entity.Player;
@@ -211,7 +213,7 @@ public class FarmersLife extends JavaPlugin implements Listener, CommandExecutor
         return economy != null;
     }
 
-    LinkedList<BuyItem> buyItems = new LinkedList<>();
+    static LinkedList<BuyItem> buyItems = new LinkedList<>();
 
     public boolean isDepositBox(Location location) {
         for (DepositBox box : depositBoxes) {
@@ -231,7 +233,7 @@ public class FarmersLife extends JavaPlugin implements Listener, CommandExecutor
         return null;
     }
 
-    public Material getMaterial(String string) {
+    public static Material getMaterial(String string) {
         for (Material material : Material.values()) {
             if (material.name().equals(string)) {
                 return material;
@@ -252,44 +254,6 @@ public class FarmersLife extends JavaPlugin implements Listener, CommandExecutor
         blockMeta.setBlockState(spawner);
         item.setItemMeta(blockMeta);
         spawnerInventory.setItem(1, item);
-    }
-
-    public void loadShop() throws IOException {
-        buyInventory = Bukkit.createInventory(null, 9, "Buy - Items Change Daily");
-        FileReader fileReader = new FileReader();
-        String dataIn = "";
-        try {
-            dataIn = fileReader.read("plugins/FarmersLife/shop.txt");
-        } catch (Exception e) {
-            FileWriter writer = new FileWriter("plugins/FarmersLife/shop.txt");
-            writer.write(defaultFiles.defaultShop);
-            writer.close();
-            dataIn = fileReader.read("plugins/FarmersLife/shop.txt");
-        }
-        String[] data = dataIn.split(" ");
-
-        LinkedList<Material> items = new LinkedList<Material>();
-        Random random;
-
-        while (items.size() < 9) {
-            for (int i = 1; i < data.length; i++) {
-                String matName = data[i];
-                Material material = getMaterial(data[i]);
-                i++;
-                int price = Integer.parseInt(data[i]);
-                i++;
-                int amount = Integer.parseInt(data[i]);
-                if (material != null) {
-                    random = new Random();
-                    int chance = random.nextInt(data.length - items.size());
-                    if (chance == 1 && !items.contains(material)) {
-                        addToInventory(buyInventory, material, price, amount);
-                        items.add(material);
-                    }
-                } else
-                    getLogger().info(matName + " could not be identified");
-            }
-        }
     }
 
     public void loadDepositShop() throws IOException {
@@ -345,7 +309,7 @@ public class FarmersLife extends JavaPlugin implements Listener, CommandExecutor
 
     public void populateBuyInventory() {
         try {
-            loadShop();
+            fileReader.loadBuyShop();
             loadSeedsShop();
         } catch (IOException e) {
             System.out.println("Failed To Load Shops");
@@ -357,6 +321,22 @@ public class FarmersLife extends JavaPlugin implements Listener, CommandExecutor
         ItemStack item = new ItemStack(material, amount);
         ItemMeta itemMeta = item.getItemMeta();
         itemMeta.setLore(Collections.singletonList("$" + price));
+        item.setItemMeta(itemMeta);
+        inventory.addItem(item);
+        buyItems.add(new BuyItem(material, price, amount));
+    }
+
+    public static void addToInventory(Inventory inventory, Material material, int price, int amount, boolean isSpecial, int deduction) {
+        ItemStack item = new ItemStack(material, amount);
+        ItemMeta itemMeta = item.getItemMeta();
+        List<String> lore = new ArrayList<String>();
+        lore.add("$" + price);
+        if (isSpecial) {
+            lore.add("-----------------");
+            lore.add("SPECIAL");
+            lore.add("Original Price: $" + (price + deduction));
+        }
+        itemMeta.setLore(lore);
         item.setItemMeta(itemMeta);
         inventory.addItem(item);
         buyItems.add(new BuyItem(material, price, amount));
@@ -458,13 +438,15 @@ public class FarmersLife extends JavaPlugin implements Listener, CommandExecutor
     @EventHandler
     public void craft(PrepareItemCraftEvent event) {
         boolean golemNerf = false;
+        boolean shopNerf = false;
         try {
             for (ItemStack item : event.getInventory().getContents()) {
                 assert item != null;
                 if (item.getItemMeta() != null) {
-                    if (item.getItemMeta().getDisplayName().contains("GOLEM")) {
+                    if (item.getItemMeta().getDisplayName().contains("GOLEM"))
                         golemNerf = true;
-                    }
+                    if (item.getItemMeta().getDisplayName().contains("Shop"))
+                        shopNerf = true;
                 }
 
             }
@@ -472,6 +454,13 @@ public class FarmersLife extends JavaPlugin implements Listener, CommandExecutor
                 ItemStack result = Objects.requireNonNull(event.getRecipe()).getResult();
                 ItemMeta meta = event.getRecipe().getResult().getItemMeta();
                 meta.setDisplayName("GOLEM " + Objects.requireNonNull(event.getInventory().getResult()).getType().name());
+                result.setItemMeta(meta);
+                event.getInventory().setResult(result);
+            }
+            else if (shopNerf){
+                ItemStack result = Objects.requireNonNull(event.getRecipe()).getResult();
+                ItemMeta meta = event.getRecipe().getResult().getItemMeta();
+                meta.setDisplayName("Shop " + Objects.requireNonNull(event.getInventory().getResult()).getType().name());
                 result.setItemMeta(meta);
                 event.getInventory().setResult(result);
             }
@@ -1246,11 +1235,7 @@ public class FarmersLife extends JavaPlugin implements Listener, CommandExecutor
 
                     fileReader.savePlayers();
 
-                    try {
-                        loadShop();
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
+                    fileReader.loadBuyShop();
                 }
             }
         }, 1, 1);
@@ -1313,11 +1298,7 @@ public class FarmersLife extends JavaPlugin implements Listener, CommandExecutor
             buyInventory.clear();
             buyInventory2.clear();
             buyItems.clear();
-            try {
-                loadShop();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
+            fileReader.loadBuyShop();
             depositCrops.clear();
             try {
                 loadDepositShop();

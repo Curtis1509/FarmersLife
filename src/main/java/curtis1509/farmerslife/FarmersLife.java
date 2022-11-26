@@ -653,6 +653,7 @@ public class FarmersLife extends JavaPlugin implements Listener, CommandExecutor
             }
 
             if ((inventory == buyInventory || inventory == buyInventory2 || inventory == seedsInventory) && (event.getClickedInventory() == buyInventory2 || event.getClickedInventory() == buyInventory || event.getClickedInventory() == seedsInventory)) {
+                getLogger().info("clicked the buy inventory");
                 for (BuyItem item : buyItems) {
                     assert clicked != null;
                     if (item.getMaterial() == clicked.getType()) {
@@ -1235,7 +1236,7 @@ public class FarmersLife extends JavaPlugin implements Listener, CommandExecutor
 
                     fileReader.savePlayers();
 
-                    fileReader.loadBuyShop();
+                    reloadShop();
                 }
             }
         }, 1, 1);
@@ -1295,24 +1296,28 @@ public class FarmersLife extends JavaPlugin implements Listener, CommandExecutor
                 }
             }
         } else if (cmd.getName().equalsIgnoreCase("reloadshop")) {
-            buyInventory.clear();
-            buyInventory2.clear();
-            buyItems.clear();
-            fileReader.loadBuyShop();
-            depositCrops.clear();
-            try {
-                loadDepositShop();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-            seedsInventory.clear();
-            try {
-                loadSeedsShop();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
+            reloadShop();
         }
         return false;
+    }
+
+    public void reloadShop(){
+        buyInventory.clear();
+        buyInventory2.clear();
+        buyItems.clear();
+        fileReader.loadBuyShop();
+        depositCrops.clear();
+        try {
+            loadDepositShop();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        seedsInventory.clear();
+        try {
+            loadSeedsShop();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 }

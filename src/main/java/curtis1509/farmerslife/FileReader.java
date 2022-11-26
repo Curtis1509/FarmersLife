@@ -283,7 +283,6 @@ public class FileReader {
         int failedItems = 0;
         while (selectedMaterials.size() < itemSlots && selectedMaterials.size() < items.size()-failedItems){
             failedItems = 0;
-            getLogger().info(selectedMaterials.size() + " | " + items.size());
             for (String item : items){
                 Material material = FarmersLife.getMaterial(item);
                 if (material != null){

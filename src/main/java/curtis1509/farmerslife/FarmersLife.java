@@ -36,6 +36,7 @@ import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.material.Crops;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitRunnable;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -139,6 +140,7 @@ public class FarmersLife extends JavaPlugin implements Listener, CommandExecutor
         scheduleTimer(this.getServer().getWorld("world"));
 
         fileReader.loadDeposits();
+        fileReader.loadPens();
         getServer().getPluginManager().registerEvents(this, this);
 
         ItemStack item = new ItemStack(Material.WHEAT_SEEDS, 1);
@@ -765,7 +767,8 @@ public class FarmersLife extends JavaPlugin implements Listener, CommandExecutor
                         Location A = waitingForPenB.get(event.getPlayer().getName());
                         waitingForPenB.remove(event.getPlayer().getName());
                         Location B = event.getClickedBlock().getLocation();
-                        pens.add(new Pen(A, B, event.getPlayer().getName()));
+                        Random random = new Random();
+                        pens.add(new Pen(A, B, event.getPlayer().getName(),random.nextInt(100000)));
                     }
                 }
 
@@ -1055,6 +1058,25 @@ public class FarmersLife extends JavaPlugin implements Listener, CommandExecutor
         }
     }
 
+    public static HashMap<String, Integer> animalNames = new HashMap<>();
+    public static HashMap<EntityType, Double> animalCost = new HashMap<>();
+    @EventHandler
+    public void onInteract(PlayerInteractAtEntityEvent e) {
+        if (e.getPlayer().getInventory().getItemInMainHand().getType() == Material.NAME_TAG){
+            String oldName = e.getRightClicked().getCustomName();
+            String name = e.getPlayer().getInventory().getItemInMainHand().getItemMeta().getDisplayName();
+            this.getServer().getScheduler().scheduleSyncDelayedTask(this, new Runnable() {
+                public void run() {
+                    Random random = new Random();
+                    animalNames.remove(oldName);
+                    String newName = name + " #" + random.nextInt(100000);
+                    e.getRightClicked().setCustomName(newName);
+                    animalNames.put(newName,0);
+                }
+            },1);
+        }
+    }
+
     boolean sleep = false;
 
     public void scheduleTimer(final World world) {
@@ -1168,6 +1190,11 @@ public class FarmersLife extends JavaPlugin implements Listener, CommandExecutor
                     world.setTime(0);
                 }
                 if (time == 5) {
+
+                    for (String key : animalNames.keySet()) {
+                        animalNames.replace(key, animalNames.get(key)+1);
+                    }
+
                     day = world.getGameTime();
                     try {
                         fileReader.newDay();
@@ -1180,6 +1207,19 @@ public class FarmersLife extends JavaPlugin implements Listener, CommandExecutor
                             player.sendTitle(ChatColor.GOLD + "Rise and Shine", ChatColor.BLUE + " Rainy Day");
                         } else {
                             player.sendTitle(ChatColor.GOLD + "Rise and Shine", ChatColor.BLUE + " Sunny Day");
+                        }
+                    }
+                    for (Entity mob : world.getEntities()){
+                        if(mob.getCustomName()!=null && mob.getType() != EntityType.PLAYER){
+                            for (Pen pen : pens){
+                                if (pen.insidePen(mob.getLocation())){
+                                    mob.remove();
+                                    animalCost.put(EntityType.COW, 50.0);
+                                    double multiplier = animalNames.get(mob.getCustomName()) * 0.1;
+                                    double payout = animalCost.get(mob.getType()) + (animalCost.get(mob.getType())*multiplier);
+                                    economy.depositPlayer(pen.owner, payout);
+                                }
+                            }
                         }
                     }
                     for (DepositBox box : depositBoxes) {

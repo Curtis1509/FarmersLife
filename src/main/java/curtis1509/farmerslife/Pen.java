@@ -6,11 +6,13 @@ public class Pen {
     Location pointA;
     Location pointB;
     String owner;
+    int id;
 
-    public Pen(Location pointA, Location pointB, String owner){
+    public Pen(Location pointA, Location pointB, String owner, int id){
         this.pointA = pointA;
         this.pointB = pointB;
         this.owner = owner;
+        this.id = id;
     }
 
     public boolean insidePen(Location location){

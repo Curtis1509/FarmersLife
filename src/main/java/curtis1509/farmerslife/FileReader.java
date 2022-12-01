@@ -205,6 +205,19 @@ public class FileReader {
                 depositConfig.set(id + ".y", deposits.getDepositBox().getLocation().getBlockY());
                 depositConfig.set(id + ".z", deposits.getDepositBox().getLocation().getBlockZ());
             }
+
+            for (Pen pen : FarmersLife.pens) {
+                String id = "pens." + pen.id;
+                depositConfig.set(id + ".owner", pen.owner);
+                depositConfig.set(id + ".a.x", pen.pointA.getBlockX());
+                depositConfig.set(id + ".a.y", pen.pointA.getBlockY());
+                depositConfig.set(id + ".a.z", pen.pointA.getBlockZ());
+
+                depositConfig.set(id + ".b.x", pen.pointB.getBlockX());
+                depositConfig.set(id + ".b.y", pen.pointB.getBlockY());
+                depositConfig.set(id + ".b.z", pen.pointB.getBlockZ());
+            }
+
             depositConfig.save(depositsFileT);
 
             createBackup();
@@ -231,6 +244,24 @@ public class FileReader {
             }
         } catch (NullPointerException e) {
             getLogger().info("Deposit Box File has no contents");
+        }
+    }
+
+    public void loadPens() {
+        try {
+            FileConfiguration depositConfig = YamlConfiguration.loadConfiguration(depositsFileT);
+            ConfigurationSection section = depositConfig.getConfigurationSection("pens");
+            Set<String> childSections = section.getKeys(false);
+
+            for (String child : childSections) {
+                int id = Integer.parseInt(child);
+                Location locationA = new Location(FarmersLife.world, depositConfig.getInt("pens." + child + ".a.x"), depositConfig.getInt("pens." + child + ".a.y"), depositConfig.getInt("pens." + child + ".a.z"));
+                Location locationB = new Location(FarmersLife.world, depositConfig.getInt("pens." + child + ".b.x"), depositConfig.getInt("pens." + child + ".b.y"), depositConfig.getInt("pens." + child + ".b.z"));
+                String owner = depositConfig.getString("pens." + child + ".owner");
+                FarmersLife.pens.add(new Pen(locationA, locationB, owner, id));
+            }
+        } catch (NullPointerException e) {
+            getLogger().info("Pens File has no contents");
         }
     }
 

@@ -17,3 +17,6 @@ commands:
   pen:
     description: Set the zone for a selling pen
     usage: /pen (Then select corner A and corner B)
+  deletepen:
+    description: Delete the pen you're inside of
+    usage: /deletepen

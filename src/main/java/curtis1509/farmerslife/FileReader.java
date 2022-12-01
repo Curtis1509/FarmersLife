@@ -7,6 +7,7 @@ import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.EntityType;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -171,12 +172,32 @@ public class FileReader {
 
     public void removeDepositData(DepositBox depositBox) throws IOException {
         FileConfiguration depositConfig = YamlConfiguration.loadConfiguration(depositsFileT);
-        String id = "" + depositBox.getID();
+        String id = "deposits." + depositBox.getID();
         if (depositConfig.contains(id)) {
             depositConfig.set(id, null);
         }
         depositConfig.save(depositsFileT);
         FarmersLife.depositBoxes.remove(depositBox);
+    }
+
+    public void removePenData(Pen pen) throws IOException {
+        FileConfiguration depositConfig = YamlConfiguration.loadConfiguration(depositsFileT);
+        String id = "pens." + pen.id;
+        if (depositConfig.contains(id)) {
+            depositConfig.set(id, null);
+        }
+        depositConfig.save(depositsFileT);
+        FarmersLife.pens.remove(pen);
+    }
+
+    public void removeNametagData(String nametag) throws IOException {
+        FileConfiguration depositConfig = YamlConfiguration.loadConfiguration(depositsFileT);
+        String id = "nametags." + nametag;
+        if (depositConfig.contains(id)) {
+            depositConfig.set(id, null);
+        }
+        depositConfig.save(depositsFileT);
+        FarmersLife.animalNames.remove(nametag);
     }
 
     public void savePlayers() {
@@ -216,6 +237,11 @@ public class FileReader {
                 depositConfig.set(id + ".b.x", pen.pointB.getBlockX());
                 depositConfig.set(id + ".b.y", pen.pointB.getBlockY());
                 depositConfig.set(id + ".b.z", pen.pointB.getBlockZ());
+            }
+
+            for (String key : FarmersLife.animalNames.keySet()) {
+                String id = "nametags." + key;
+                depositConfig.set(id + ".days", FarmersLife.animalNames.get(key));
             }
 
             depositConfig.save(depositsFileT);
@@ -265,6 +291,21 @@ public class FileReader {
         }
     }
 
+    public void loadNametags() {
+        try {
+            FileConfiguration depositConfig = YamlConfiguration.loadConfiguration(depositsFileT);
+            ConfigurationSection section = depositConfig.getConfigurationSection("nametags");
+            Set<String> childSections = section.getKeys(false);
+
+            for (String child : childSections) {
+                int days = depositConfig.getInt("nametags." + child + ".days");
+                FarmersLife.animalNames.put(child,days);
+            }
+        } catch (NullPointerException e) {
+            getLogger().info("Nametags File has no contents");
+        }
+    }
+
     public boolean loadProtection(String playerName) {
         FileConfiguration playerConfig = YamlConfiguration.loadConfiguration(playersFileT);
         boolean protection;
@@ -299,6 +340,95 @@ public class FileReader {
             playerConfig.set(playerName + "."+perkName, false);
         }
         return perk;
+    }
+
+    public void loadAnimalCosts() {
+        FileConfiguration costConfig = YamlConfiguration.loadConfiguration(new File("plugins/FarmersLife/animalCosts.yml"));
+        Set<String> items = Objects.requireNonNull(costConfig.getConfigurationSection("animals")).getKeys(false);
+        if (costConfig.contains("animals.cow")){
+            FarmersLife.animalCost.put(EntityType.COW, costConfig.getDouble("animals.cow.cost"));
+        }
+        if (costConfig.contains("animals.pig")){
+            FarmersLife.animalCost.put(EntityType.PIG, costConfig.getDouble("animals.pig.cost"));
+        }
+        if (costConfig.contains("animals.panda")){
+            FarmersLife.animalCost.put(EntityType.PANDA, costConfig.getDouble("animals.panda.cost"));
+        }
+        if (costConfig.contains("animals.donkey")){
+            FarmersLife.animalCost.put(EntityType.DONKEY, costConfig.getDouble("animals.donkey.cost"));
+        }
+        if (costConfig.contains("animals.horse")){
+            FarmersLife.animalCost.put(EntityType.HORSE, costConfig.getDouble("animals.horse.cost"));
+        }
+        if (costConfig.contains("animals.chicken")){
+            FarmersLife.animalCost.put(EntityType.CHICKEN, costConfig.getDouble("animals.chicken.cost"));
+        }
+        if (costConfig.contains("animals.villager")){
+            FarmersLife.animalCost.put(EntityType.VILLAGER, costConfig.getDouble("animals.villager.cost"));
+        }
+        if (costConfig.contains("animals.cat")){
+            FarmersLife.animalCost.put(EntityType.CAT, costConfig.getDouble("animals.cat.cost"));
+        }
+        if (costConfig.contains("animals.dog")){
+            FarmersLife.animalCost.put(EntityType.WOLF, costConfig.getDouble("animals.dog.cost"));
+        }
+        if (costConfig.contains("animals.axolotl")){
+            FarmersLife.animalCost.put(EntityType.AXOLOTL, costConfig.getDouble("animals.axolotl.cost"));
+        }
+        if (costConfig.contains("animals.allay")){
+            FarmersLife.animalCost.put(EntityType.ALLAY, costConfig.getDouble("animals.allay.cost"));
+        }
+        if (costConfig.contains("animals.bee")){
+            FarmersLife.animalCost.put(EntityType.BEE, costConfig.getDouble("animals.bee.cost"));
+        }
+        if (costConfig.contains("animals.bat")){
+            FarmersLife.animalCost.put(EntityType.BAT, costConfig.getDouble("animals.bat.cost"));
+        }
+        if (costConfig.contains("animals.dolphin")){
+            FarmersLife.animalCost.put(EntityType.DOLPHIN, costConfig.getDouble("animals.dolphin.cost"));
+        }
+        if (costConfig.contains("animals.tropicalfish")){
+            FarmersLife.animalCost.put(EntityType.TROPICAL_FISH, costConfig.getDouble("animals.tropicalfish.cost"));
+        }
+        if (costConfig.contains("animals.pufferfish")){
+            FarmersLife.animalCost.put(EntityType.PUFFERFISH, costConfig.getDouble("animals.pufferfish.cost"));
+        }
+        if (costConfig.contains("animals.salmon")){
+            FarmersLife.animalCost.put(EntityType.SALMON, costConfig.getDouble("animals.salmon.cost"));
+        }
+        if (costConfig.contains("animals.cod")){
+            FarmersLife.animalCost.put(EntityType.COD, costConfig.getDouble("animals.cod.cost"));
+        }
+        if (costConfig.contains("animals.fox")){
+            FarmersLife.animalCost.put(EntityType.FOX, costConfig.getDouble("animals.fox.cost"));
+        }
+        if (costConfig.contains("animals.rabbit")){
+            FarmersLife.animalCost.put(EntityType.RABBIT, costConfig.getDouble("animals.rabbit.cost"));
+        }
+        if (costConfig.contains("animals.frog")){
+            FarmersLife.animalCost.put(EntityType.FROG, costConfig.getDouble("animals.frog.cost"));
+        }
+        if (costConfig.contains("animals.skeletonhorse")){
+            FarmersLife.animalCost.put(EntityType.SKELETON_HORSE, costConfig.getDouble("animals.skeletonhorse.cost"));
+        }
+        if (costConfig.contains("animals.parrot")){
+            FarmersLife.animalCost.put(EntityType.PARROT, costConfig.getDouble("animals.parrot.cost"));
+        }
+        if (costConfig.contains("animals.llama")){
+            FarmersLife.animalCost.put(EntityType.LLAMA, costConfig.getDouble("animals.llama.cost"));
+        }
+        if (costConfig.contains("animals.goat")){
+            FarmersLife.animalCost.put(EntityType.GOAT, costConfig.getDouble("animals.goat.cost"));
+        }
+        if (costConfig.contains("animals.mule")){
+            FarmersLife.animalCost.put(EntityType.MULE, costConfig.getDouble("animals.mule.cost"));
+        }
+        if (costConfig.contains("animals.mooshroom")){
+            FarmersLife.animalCost.put(EntityType.MUSHROOM_COW, costConfig.getDouble("animals.mooshroom.cost"));
+        }
+        if (costConfig.contains("animals.squid")){
+            FarmersLife.animalCost.put(EntityType.SQUID, costConfig.getDouble("animals.squid.cost"));
+        }
     }
 
     public void loadBuyShop(){

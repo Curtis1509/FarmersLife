@@ -48,7 +48,9 @@ public class FarmersLife extends JavaPlugin implements Listener, CommandExecutor
 
     public static DefaultFiles defaultFiles = new DefaultFiles();
     public static LinkedList<DepositBox> depositBoxes = new LinkedList<>();
-    public static LinkedList<String> waitingForPlayer = new LinkedList<>();
+    public static LinkedList<Pen> pens = new LinkedList<>();
+    public static HashMap<String, String> waitingForPlayer = new HashMap<>();
+    public static HashMap<String, Location> waitingForPenB = new HashMap<>();
     public static Inventory menuInventory = Bukkit.createInventory(null, 9, "Farmers Life Menu");
     public static Inventory spawnerInventory = Bukkit.createInventory(null, 9, "Buy Spawners Inventory");
     public static Inventory seedsInventory = Bukkit.createInventory(null, 18, "Seeds");
@@ -113,7 +115,8 @@ public class FarmersLife extends JavaPlugin implements Listener, CommandExecutor
 
         defaultFiles = new DefaultFiles();
         depositBoxes = new LinkedList<>();
-        waitingForPlayer = new LinkedList<>();
+        waitingForPlayer = new HashMap<>();
+        waitingForPenB = new HashMap<>();
         menuInventory = Bukkit.createInventory(null, 9, "Farmers Life Menu");
         spawnerInventory = Bukkit.createInventory(null, 9, "Buy Spawners Inventory");
         seedsInventory = Bukkit.createInventory(null, 18, "Seeds");
@@ -456,8 +459,7 @@ public class FarmersLife extends JavaPlugin implements Listener, CommandExecutor
                 meta.setDisplayName("GOLEM " + Objects.requireNonNull(event.getInventory().getResult()).getType().name());
                 result.setItemMeta(meta);
                 event.getInventory().setResult(result);
-            }
-            else if (shopNerf){
+            } else if (shopNerf) {
                 ItemStack result = Objects.requireNonNull(event.getRecipe()).getResult();
                 ItemMeta meta = event.getRecipe().getResult().getItemMeta();
                 meta.setDisplayName("Shop " + Objects.requireNonNull(event.getInventory().getResult()).getType().name());
@@ -620,12 +622,12 @@ public class FarmersLife extends JavaPlugin implements Listener, CommandExecutor
                 } else if (clicked.getType() == Material.CHEST) {
                     event.setCancelled(true);
                     event.getWhoClicked().closeInventory();
-                    waitingForPlayer.add(event.getWhoClicked().getName());
+                    waitingForPlayer.put(event.getWhoClicked().getName(), "box");
                     event.getWhoClicked().sendMessage("Great! Click a chest to make it your deposit box.");
                     Thread wait = new Thread(() -> {
                         try {
                             Thread.sleep(10000);
-                            if (waitingForPlayer.contains(event.getWhoClicked().getName())) {
+                            if (waitingForPlayer.get(event.getWhoClicked().getName()).equals("box")) {
                                 event.getWhoClicked().sendMessage("You took too long to select a chest. Try again!");
                                 waitingForPlayer.remove(event.getWhoClicked().getName());
                             }
@@ -753,7 +755,21 @@ public class FarmersLife extends JavaPlugin implements Listener, CommandExecutor
                     }
                 }
 
-                if (event.getClickedBlock().getType().equals(Material.CHEST) && waitingForPlayer.contains(event.getPlayer().getName())) {
+                if (waitingForPlayer.get(event.getPlayer().getName()).equals("pen")) {
+                    if (!waitingForPenB.containsKey(event.getPlayer().getName())) {
+                        event.getPlayer().sendMessage("Selected Corner A: " + event.getClickedBlock().getLocation().getBlockX() + "x, " + event.getClickedBlock().getLocation().getBlockY() + "y, " + event.getClickedBlock().getLocation().getBlockZ() + "z");
+                        waitingForPenB.put(event.getPlayer().getName(), event.getClickedBlock().getLocation());
+                    } else {
+                        waitingForPlayer.remove(event.getPlayer().getName());
+                        event.getPlayer().sendMessage("Selected Corner B: " + event.getClickedBlock().getLocation().getBlockX() + "x, " + event.getClickedBlock().getLocation().getBlockY() + "y, " + event.getClickedBlock().getLocation().getBlockZ() + "z");
+                        Location A = waitingForPenB.get(event.getPlayer().getName());
+                        waitingForPenB.remove(event.getPlayer().getName());
+                        Location B = event.getClickedBlock().getLocation();
+                        pens.add(new Pen(A, B, event.getPlayer().getName()));
+                    }
+                }
+
+                if (event.getClickedBlock().getType().equals(Material.CHEST) && waitingForPlayer.get(event.getPlayer().getName()).equals("box")) {
 
                     boolean taken = false;
                     for (DepositBox box : depositBoxes) {
@@ -1046,9 +1062,23 @@ public class FarmersLife extends JavaPlugin implements Listener, CommandExecutor
             public void run() {
                 for (curtis1509.farmerslife.Player player : players) {
                     player.updateScoreboard(getTime());
+                    boolean inPen = false;
+                    for (Pen pen : pens) {
+                        if (pen.insidePen(player.getPlayer().getLocation())) {
+                            if (!player.inPen) {
+                                player.getPlayer().sendMessage("You're inside " + pen.owner + "'s pen");
+                                player.inPen = true;
+                            }
+                            inPen = true;
+                        }
+                    }
+                    player.inPen = (inPen);
                 }
+
                 long time = world.getTime();
-                if (time > 15000 && Bukkit.getOnlinePlayers().size() > 1) {
+                if (time > 15000 && Bukkit.getOnlinePlayers().
+
+                        size() > 1) {
                     int total = 0;
                     boolean noOneInbed = true;
                     for (Player player : Bukkit.getOnlinePlayers()) {
@@ -1266,23 +1296,25 @@ public class FarmersLife extends JavaPlugin implements Listener, CommandExecutor
 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-        if (cmd.getName().equalsIgnoreCase("box") && !waitingForPlayer.contains(sender.getName())) {
-            waitingForPlayer.add(sender.getName());
-            sender.sendMessage("Great! Click a chest to make it your deposit box.");
-            Thread wait = new Thread(() -> {
-                try {
-                    Thread.sleep(10000);
-                    if (waitingForPlayer.contains(sender.getName())) {
-                        sender.sendMessage("You took too long to select a chest. Try again!");
-                        waitingForPlayer.remove(sender.getName());
+        if (cmd.getName().equalsIgnoreCase("box")) {
+            if (!waitingForPlayer.containsKey(sender.getName())) {
+                waitingForPlayer.put(sender.getName(), "box");
+                sender.sendMessage("Great! Click a chest to make it your deposit box.");
+                Thread wait = new Thread(() -> {
+                    try {
+                        Thread.sleep(10000);
+                        if (waitingForPlayer.get(sender.getName()).equals("box")) {
+                            sender.sendMessage("You took too long to select a chest. Try again!");
+                            waitingForPlayer.remove(sender.getName());
+                        }
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
                     }
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
+                });
+                wait.start();
+                return true;
+            }
 
-                }
-            });
-            wait.start();
-            return true;
         } else if (cmd.getName().equalsIgnoreCase("farm")) {
             Objects.requireNonNull(Bukkit.getPlayer(sender.getName())).openInventory(menuInventory);
         } else if (cmd.getName().equalsIgnoreCase("reloadscores")) {
@@ -1297,23 +1329,36 @@ public class FarmersLife extends JavaPlugin implements Listener, CommandExecutor
             }
         } else if (cmd.getName().equalsIgnoreCase("reloadshop")) {
             reloadShop();
+            sender.sendMessage("Shop Reloaded");
+        } else if (cmd.getName().equalsIgnoreCase("pen") && !waitingForPlayer.containsKey(sender.getName())) {
+            sender.sendMessage("Left click the first corner of your selling pen");
+            waitingForPlayer.put(sender.getName(), "pen");
+            Thread wait = new Thread(() -> {
+                try {
+                    Thread.sleep(20000);
+                    if (waitingForPlayer.get(sender.getName()).equals("pen")) {
+                        sender.sendMessage("You took too long to select a pen. Try again!");
+                        waitingForPlayer.remove(sender.getName());
+                    }
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            });
+            wait.start();
+            return true;
         }
         return false;
     }
 
-    public void reloadShop(){
+    public void reloadShop() {
         buyInventory.clear();
         buyInventory2.clear();
         buyItems.clear();
         fileReader.loadBuyShop();
         depositCrops.clear();
-        try {
-            loadDepositShop();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
         seedsInventory.clear();
         try {
+            loadDepositShop();
             loadSeedsShop();
         } catch (IOException e) {
             throw new RuntimeException(e);

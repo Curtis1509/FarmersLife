@@ -14,3 +14,9 @@ commands:
     description: Reloads the shop file. Used to refresh prices and items on sale
   reloadscores:
     description: Reloads all the scoreboards.
+  pen:
+    description: Set the zone for a selling pen
+    usage: /pen (Then select corner A and corner B)
+  deletepen:
+    description: Delete the pen you're inside of
+    usage: /deletepen

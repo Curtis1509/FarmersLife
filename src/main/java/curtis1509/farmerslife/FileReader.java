@@ -2,10 +2,12 @@ package curtis1509.farmerslife;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.EntityType;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -170,12 +172,32 @@ public class FileReader {
 
     public void removeDepositData(DepositBox depositBox) throws IOException {
         FileConfiguration depositConfig = YamlConfiguration.loadConfiguration(depositsFileT);
-        String id = "" + depositBox.getID();
+        String id = "deposits." + depositBox.getID();
         if (depositConfig.contains(id)) {
             depositConfig.set(id, null);
         }
         depositConfig.save(depositsFileT);
         FarmersLife.depositBoxes.remove(depositBox);
+    }
+
+    public void removePenData(Pen pen) throws IOException {
+        FileConfiguration depositConfig = YamlConfiguration.loadConfiguration(depositsFileT);
+        String id = "pens." + pen.id;
+        if (depositConfig.contains(id)) {
+            depositConfig.set(id, null);
+        }
+        depositConfig.save(depositsFileT);
+        FarmersLife.pens.remove(pen);
+    }
+
+    public void removeNametagData(String nametag) throws IOException {
+        FileConfiguration depositConfig = YamlConfiguration.loadConfiguration(depositsFileT);
+        String id = "nametags." + nametag;
+        if (depositConfig.contains(id)) {
+            depositConfig.set(id, null);
+        }
+        depositConfig.save(depositsFileT);
+        FarmersLife.animalNames.remove(nametag);
     }
 
     public void savePlayers() {
@@ -204,6 +226,24 @@ public class FileReader {
                 depositConfig.set(id + ".y", deposits.getDepositBox().getLocation().getBlockY());
                 depositConfig.set(id + ".z", deposits.getDepositBox().getLocation().getBlockZ());
             }
+
+            for (Pen pen : FarmersLife.pens) {
+                String id = "pens." + pen.id;
+                depositConfig.set(id + ".owner", pen.owner);
+                depositConfig.set(id + ".a.x", pen.pointA.getBlockX());
+                depositConfig.set(id + ".a.y", pen.pointA.getBlockY());
+                depositConfig.set(id + ".a.z", pen.pointA.getBlockZ());
+
+                depositConfig.set(id + ".b.x", pen.pointB.getBlockX());
+                depositConfig.set(id + ".b.y", pen.pointB.getBlockY());
+                depositConfig.set(id + ".b.z", pen.pointB.getBlockZ());
+            }
+
+            for (String key : FarmersLife.animalNames.keySet()) {
+                String id = "nametags." + key;
+                depositConfig.set(id + ".days", FarmersLife.animalNames.get(key));
+            }
+
             depositConfig.save(depositsFileT);
 
             createBackup();
@@ -230,6 +270,39 @@ public class FileReader {
             }
         } catch (NullPointerException e) {
             getLogger().info("Deposit Box File has no contents");
+        }
+    }
+
+    public void loadPens() {
+        try {
+            FileConfiguration depositConfig = YamlConfiguration.loadConfiguration(depositsFileT);
+            ConfigurationSection section = depositConfig.getConfigurationSection("pens");
+            Set<String> childSections = section.getKeys(false);
+
+            for (String child : childSections) {
+                int id = Integer.parseInt(child);
+                Location locationA = new Location(FarmersLife.world, depositConfig.getInt("pens." + child + ".a.x"), depositConfig.getInt("pens." + child + ".a.y"), depositConfig.getInt("pens." + child + ".a.z"));
+                Location locationB = new Location(FarmersLife.world, depositConfig.getInt("pens." + child + ".b.x"), depositConfig.getInt("pens." + child + ".b.y"), depositConfig.getInt("pens." + child + ".b.z"));
+                String owner = depositConfig.getString("pens." + child + ".owner");
+                FarmersLife.pens.add(new Pen(locationA, locationB, owner, id));
+            }
+        } catch (NullPointerException e) {
+            getLogger().info("Pens File has no contents");
+        }
+    }
+
+    public void loadNametags() {
+        try {
+            FileConfiguration depositConfig = YamlConfiguration.loadConfiguration(depositsFileT);
+            ConfigurationSection section = depositConfig.getConfigurationSection("nametags");
+            Set<String> childSections = section.getKeys(false);
+
+            for (String child : childSections) {
+                int days = depositConfig.getInt("nametags." + child + ".days");
+                FarmersLife.animalNames.put(child,days);
+            }
+        } catch (NullPointerException e) {
+            getLogger().info("Nametags File has no contents");
         }
     }
 
@@ -268,5 +341,160 @@ public class FileReader {
         }
         return perk;
     }
+
+    public void loadAnimalCosts() {
+        FileConfiguration costConfig = YamlConfiguration.loadConfiguration(new File("plugins/FarmersLife/animalCosts.yml"));
+        Set<String> items = Objects.requireNonNull(costConfig.getConfigurationSection("animals")).getKeys(false);
+        if (costConfig.contains("animals.cow")){
+            FarmersLife.animalCost.put(EntityType.COW, costConfig.getDouble("animals.cow.cost"));
+        }
+        if (costConfig.contains("animals.pig")){
+            FarmersLife.animalCost.put(EntityType.PIG, costConfig.getDouble("animals.pig.cost"));
+        }
+        if (costConfig.contains("animals.panda")){
+            FarmersLife.animalCost.put(EntityType.PANDA, costConfig.getDouble("animals.panda.cost"));
+        }
+        if (costConfig.contains("animals.donkey")){
+            FarmersLife.animalCost.put(EntityType.DONKEY, costConfig.getDouble("animals.donkey.cost"));
+        }
+        if (costConfig.contains("animals.horse")){
+            FarmersLife.animalCost.put(EntityType.HORSE, costConfig.getDouble("animals.horse.cost"));
+        }
+        if (costConfig.contains("animals.chicken")){
+            FarmersLife.animalCost.put(EntityType.CHICKEN, costConfig.getDouble("animals.chicken.cost"));
+        }
+        if (costConfig.contains("animals.villager")){
+            FarmersLife.animalCost.put(EntityType.VILLAGER, costConfig.getDouble("animals.villager.cost"));
+        }
+        if (costConfig.contains("animals.cat")){
+            FarmersLife.animalCost.put(EntityType.CAT, costConfig.getDouble("animals.cat.cost"));
+        }
+        if (costConfig.contains("animals.dog")){
+            FarmersLife.animalCost.put(EntityType.WOLF, costConfig.getDouble("animals.dog.cost"));
+        }
+        if (costConfig.contains("animals.axolotl")){
+            FarmersLife.animalCost.put(EntityType.AXOLOTL, costConfig.getDouble("animals.axolotl.cost"));
+        }
+        if (costConfig.contains("animals.allay")){
+            FarmersLife.animalCost.put(EntityType.ALLAY, costConfig.getDouble("animals.allay.cost"));
+        }
+        if (costConfig.contains("animals.bee")){
+            FarmersLife.animalCost.put(EntityType.BEE, costConfig.getDouble("animals.bee.cost"));
+        }
+        if (costConfig.contains("animals.bat")){
+            FarmersLife.animalCost.put(EntityType.BAT, costConfig.getDouble("animals.bat.cost"));
+        }
+        if (costConfig.contains("animals.dolphin")){
+            FarmersLife.animalCost.put(EntityType.DOLPHIN, costConfig.getDouble("animals.dolphin.cost"));
+        }
+        if (costConfig.contains("animals.tropicalfish")){
+            FarmersLife.animalCost.put(EntityType.TROPICAL_FISH, costConfig.getDouble("animals.tropicalfish.cost"));
+        }
+        if (costConfig.contains("animals.pufferfish")){
+            FarmersLife.animalCost.put(EntityType.PUFFERFISH, costConfig.getDouble("animals.pufferfish.cost"));
+        }
+        if (costConfig.contains("animals.salmon")){
+            FarmersLife.animalCost.put(EntityType.SALMON, costConfig.getDouble("animals.salmon.cost"));
+        }
+        if (costConfig.contains("animals.cod")){
+            FarmersLife.animalCost.put(EntityType.COD, costConfig.getDouble("animals.cod.cost"));
+        }
+        if (costConfig.contains("animals.fox")){
+            FarmersLife.animalCost.put(EntityType.FOX, costConfig.getDouble("animals.fox.cost"));
+        }
+        if (costConfig.contains("animals.rabbit")){
+            FarmersLife.animalCost.put(EntityType.RABBIT, costConfig.getDouble("animals.rabbit.cost"));
+        }
+        if (costConfig.contains("animals.frog")){
+            FarmersLife.animalCost.put(EntityType.FROG, costConfig.getDouble("animals.frog.cost"));
+        }
+        if (costConfig.contains("animals.skeletonhorse")){
+            FarmersLife.animalCost.put(EntityType.SKELETON_HORSE, costConfig.getDouble("animals.skeletonhorse.cost"));
+        }
+        if (costConfig.contains("animals.parrot")){
+            FarmersLife.animalCost.put(EntityType.PARROT, costConfig.getDouble("animals.parrot.cost"));
+        }
+        if (costConfig.contains("animals.llama")){
+            FarmersLife.animalCost.put(EntityType.LLAMA, costConfig.getDouble("animals.llama.cost"));
+        }
+        if (costConfig.contains("animals.goat")){
+            FarmersLife.animalCost.put(EntityType.GOAT, costConfig.getDouble("animals.goat.cost"));
+        }
+        if (costConfig.contains("animals.mule")){
+            FarmersLife.animalCost.put(EntityType.MULE, costConfig.getDouble("animals.mule.cost"));
+        }
+        if (costConfig.contains("animals.mooshroom")){
+            FarmersLife.animalCost.put(EntityType.MUSHROOM_COW, costConfig.getDouble("animals.mooshroom.cost"));
+        }
+        if (costConfig.contains("animals.squid")){
+            FarmersLife.animalCost.put(EntityType.SQUID, costConfig.getDouble("animals.squid.cost"));
+        }
+    }
+
+    public void loadBuyShop(){
+        FileConfiguration shopConfig = YamlConfiguration.loadConfiguration(new File("plugins/FarmersLife/shop.yml"));
+        int itemSlots = shopConfig.getInt("slots");
+        Set<String> items = Objects.requireNonNull(shopConfig.getConfigurationSection("items")).getKeys(false);
+        double defaultShopChance = shopConfig.getDouble("shopchance");
+        double defaultSpecialChance = shopConfig.getDouble("specialchance");
+        double defaultFreeChance = shopConfig.getDouble("freechance");
+        FarmersLife.buyInventory = Bukkit.createInventory(null, itemSlots, "Farmers Daily Shop");
+        LinkedList<Material> selectedMaterials = new LinkedList<Material>();
+        Random random = new Random();
+        int failedItems = 0;
+        while (selectedMaterials.size() < itemSlots && selectedMaterials.size() < items.size()-failedItems){
+            failedItems = 0;
+            for (String item : items){
+                Material material = FarmersLife.getMaterial(item);
+                if (material != null){
+                    if (!selectedMaterials.contains(material)) {
+                        double shopChance = defaultShopChance;
+                        if (shopConfig.contains("items." + item + ".shopchance"))
+                            shopChance = shopConfig.getDouble("items." + item + ".shopchance");
+                        int chance = random.nextInt(1 + items.size() - selectedMaterials.size());
+                        boolean picked = false;
+                        if (chance == 1) {
+                            if (shopChance < 1) {
+                                double confirmSelect = random.nextDouble(1);
+                                picked = !(confirmSelect > shopChance);
+                            } else
+                                picked = true;
+                        }
+
+                        if (picked) {
+                            double specialChance = defaultSpecialChance;
+                            double freeChance = defaultFreeChance;
+                            int amount = shopConfig.getInt("items." + item + ".amount");
+
+                            if (shopConfig.contains("items." + item + ".specialchance"))
+                                shopChance = shopConfig.getDouble("items." + item + ".specialchance");
+                            if (shopConfig.contains("items." + item + ".freechance"))
+                                shopChance = shopConfig.getDouble("items." + item + ".freechance");
+
+                            int cost = shopConfig.getInt("items." + item + ".cost");
+                            int originalCost = cost;
+                            boolean isSpecial = false;
+                            if (shopConfig.contains("items." + item + ".special")) {
+                                int special = shopConfig.getInt("items." + item + ".special");
+                                double doSpecial = random.nextDouble(1);
+                                if (!(doSpecial > specialChance)) {
+                                    cost = special;
+                                    isSpecial = true;
+                                }
+                            }
+
+                            FarmersLife.addToInventory(FarmersLife.buyInventory, material, cost, amount,isSpecial,originalCost-cost);
+                            selectedMaterials.add(material);
+                        }
+                    }
+
+                }else {
+                    getLogger().info(item + " could not be identified");
+                    failedItems++;
+                }
+            }
+        }
+    }
+
 }
 

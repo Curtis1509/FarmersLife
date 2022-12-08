@@ -21,6 +21,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
@@ -663,7 +664,10 @@ public class FarmersLife extends JavaPlugin implements Listener, CommandExecutor
                                         ItemMeta meta = event.getCurrentItem().getItemMeta();
                                         assert meta != null;
                                         meta.setDisplayName("Shop " + addingItem.getType().name());
-                                        meta.setLore(Collections.singletonList("Can only sell harvests from this item"));
+                                        if (item.getMaterial() == Material.CARROT || item.getMaterial() == Material.POTATO)
+                                            meta.setLore(Collections.singletonList("Can only sell harvests from this item"));
+                                        else
+                                            meta.setLore(null);
                                         addingItem.setItemMeta(meta);
 
                                         getPlayer((Player) event.getWhoClicked()).getDeliveryOrder().add(addingItem);
@@ -816,6 +820,14 @@ public class FarmersLife extends JavaPlugin implements Listener, CommandExecutor
         }
     }
 
+    LinkedList<Location> shopBlockLocations = new LinkedList<>();
+
+    @EventHandler
+    public void onBlockPlace(BlockPlaceEvent event){
+        if (event.getItemInHand().getItemMeta().getDisplayName().contains("Shop")){
+            shopBlockLocations.add(event.getBlock().getLocation());
+        }
+    }
     @EventHandler
     public void onBlockBreak(BlockBreakEvent event) throws IOException {
 
@@ -836,6 +848,22 @@ public class FarmersLife extends JavaPlugin implements Listener, CommandExecutor
                     }
                 }
             }
+        }
+
+        if (shopBlockLocations.contains(event.getBlock().getLocation())){
+            getLogger().info("yes");
+            List<ItemStack> drops = new ArrayList<>(event.getBlock().getDrops());
+            for (ItemStack d : drops) {
+                ItemMeta meta = d.getItemMeta();
+                meta.setDisplayName("Shop " + d.getType().name());
+                d.setItemMeta(meta);
+            }
+            event.setCancelled(true);
+            event.getBlock().setType(Material.AIR);
+            for (ItemStack d : drops) {
+                event.getBlock().getWorld().dropItemNaturally(event.getBlock().getLocation(), d);
+            }
+            shopBlockLocations.remove(event.getBlock().getLocation());
         }
 
         for (DepositBox box : depositBoxes) {
@@ -1101,7 +1129,7 @@ public class FarmersLife extends JavaPlugin implements Listener, CommandExecutor
                 String name = e.getRightClicked().getCustomName();
                 for (String key : animalNames.keySet()) {
                     if (key.equals(name)) {
-                        e.getPlayer().sendMessage("This animal is " + animalNames.get(name) + " days old. " +
+                        e.getPlayer().sendMessage(name + " is " + animalNames.get(name) + " days old. " +
                                 "It is worth $" + (int) Math.floor(calculateAnimalPayout(e.getRightClicked(), getPlayer(e.getPlayer().getName()))));
                     }
                 }
@@ -1112,7 +1140,7 @@ public class FarmersLife extends JavaPlugin implements Listener, CommandExecutor
     }
 
     public double calculateAnimalPayout(Entity e, curtis1509.farmerslife.Player player) {
-        double multiplier = animalNames.get(e.getCustomName()) * 0.1;
+        double multiplier = animalNames.get(e.getCustomName()) * 0.15;
         double payout = animalCost.get(e.getType()) + (animalCost.get(e.getType()) * multiplier);
         payout = payout * player.getSkills().skillProfits.getMultiplier();
         return payout;

@@ -430,7 +430,6 @@ public class FileReader {
             FarmersLife.animalCost.put(EntityType.SQUID, costConfig.getDouble("animals.squid.cost"));
         }
     }
-
     public void loadBuyShop(){
         FileConfiguration shopConfig = YamlConfiguration.loadConfiguration(new File("plugins/FarmersLife/shop.yml"));
         int itemSlots = shopConfig.getInt("slots");

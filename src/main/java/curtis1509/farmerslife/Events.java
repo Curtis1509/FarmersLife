@@ -23,11 +23,11 @@ import org.bukkit.event.player.*;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.plugin.Plugin;
 
 import java.io.IOException;
 import java.util.*;
 
+import static curtis1509.farmerslife.FarmersLife.*;
 import static org.bukkit.Bukkit.getLogger;
 
 public class Events extends Functions implements Listener {
@@ -119,17 +119,16 @@ public class Events extends Functions implements Listener {
             if (event.getClickedBlock() != null) {
                 for (DepositBox box : depositBoxes) {
                     if (box.getDepositBox().getLocation().toString().equals(event.getClickedBlock().getLocation().toString())) {
-                        event.getPlayer().sendMessage("This is " + box.getOwner() + "'s deposit box");
+                        message(event.getPlayer(),"This is " + box.getOwner() + "'s deposit box");
                     }
                 }
 
                 if (waitingForPlayer.get(event.getPlayer().getName()).equals("pen")) {
                     if (!waitingForPenB.containsKey(event.getPlayer().getName())) {
-                        event.getPlayer().sendMessage("Selected Corner A: " + event.getClickedBlock().getLocation().getBlockX() + "x, " + event.getClickedBlock().getLocation().getBlockY() + "y, " + event.getClickedBlock().getLocation().getBlockZ() + "z");
+                        message(event.getPlayer(),"Corner Accepted. Now Select Second Corner");
                         waitingForPenB.put(event.getPlayer().getName(), event.getClickedBlock().getLocation());
                     } else {
                         waitingForPlayer.remove(event.getPlayer().getName());
-                        event.getPlayer().sendMessage("Selected Corner B: " + event.getClickedBlock().getLocation().getBlockX() + "x, " + event.getClickedBlock().getLocation().getBlockY() + "y, " + event.getClickedBlock().getLocation().getBlockZ() + "z");
                         Location A = waitingForPenB.get(event.getPlayer().getName());
                         waitingForPenB.remove(event.getPlayer().getName());
                         Location B = event.getClickedBlock().getLocation();
@@ -139,16 +138,16 @@ public class Events extends Functions implements Listener {
                         for (Pen pen : pens) {
                             if (pen.insidePen(A) || pen.insidePen(B)) {
                                 collided = true;
-                                event.getPlayer().sendMessage("Uh Oh! A selling pen in that location already exists.");
+                                message(event.getPlayer(),"Uh Oh! A selling pen in that location already exists.");
                             }
                         }
 
                         if (!collided) {
                             if (Pen.checkMaxSize(A, B)) {
                                 pens.add(new Pen(A, B, event.getPlayer().getName(), random.nextInt(100000)));
-                                event.getPlayer().sendMessage("You've successfully made a Selling Pen");
+                                message(event.getPlayer(),"You've successfully made a Selling Pen");
                             } else
-                                event.getPlayer().sendMessage("Uh oh this pen exceeds the maximum size of 32 blocks diagonally. Try again");
+                                message(event.getPlayer(),"Uh oh this pen exceeds the maximum size of 32 blocks diagonally. Try again");
                         }
                     }
                 }
@@ -162,13 +161,13 @@ public class Events extends Functions implements Listener {
                                 for (DepositBox resetBox : getDepositBoxes(event.getPlayer())) {
                                     resetBox.shipmentBox = false;
                                 }
-                                event.getPlayer().sendMessage("This is now your shipment box. Anything you buy from the shop will be delivered here each morning");
+                                message(event.getPlayer(),"This is now your shipment box. Anything you buy from the shop will be delivered here each morning");
                                 box.makeShipmentBox();
                                 waitingForPlayer.remove(event.getPlayer().getName());
                                 taken = true;
                                 break;
                             } else {
-                                event.getPlayer().sendMessage("Sorry that deposit box is taken by " + box.getOwner());
+                                message(event.getPlayer(),"Sorry that deposit box is taken by " + box.getOwner());
                                 taken = true;
                                 waitingForPlayer.remove(event.getPlayer().getName());
                             }
@@ -176,8 +175,8 @@ public class Events extends Functions implements Listener {
                     }
 
                     if (!taken) {
-                        event.getPlayer().sendMessage("Cool beans! Put some crops in here overnight and you can get some money in return!");
-                        event.getPlayer().sendMessage("Would you like to receive deliveries in this box too? Type /box");
+                        message(event.getPlayer(),"Cool beans! Put some crops in here overnight and you can get some money in return!");
+                        message(event.getPlayer(),"Would you like to receive deliveries in this box too? Type /box");
                         waitingForPlayer.remove(event.getPlayer().getName());
                         Random random = new Random();
                         depositBoxes.add(new DepositBox((Block) event.getClickedBlock().getLocation().getBlock(), event.getPlayer().getName(), random.nextInt(100000), false));
@@ -233,10 +232,10 @@ public class Events extends Functions implements Listener {
         for (DepositBox box : depositBoxes) {
             if (!(box.getOwner().equals(event.getPlayer().getName())) && box.getDepositBox().getLocation().toString().equals(event.getBlock().getLocation().toString())) {
                 event.setCancelled(true);
-                event.getPlayer().sendMessage("You can't break someone else's deposit box");
+                message(event.getPlayer(),"You can't break someone else's deposit box");
             } else if ((box.getOwner().equals(event.getPlayer().getName())) && box.getDepositBox().getLocation().toString().equals(event.getBlock().getLocation().toString())) {
                 fileReader.removeDepositData(box);
-                event.getPlayer().sendMessage("You've destroyed your deposit box");
+                message(event.getPlayer(),"You've destroyed your deposit box");
             }
         }
     }
@@ -293,45 +292,45 @@ public class Events extends Functions implements Listener {
         }
 
         getPlayer(event.getEntity()).deathInventoryi = 3;
-        event.getEntity().sendMessage("Oh no! You were knocked out unconscious and lost some items");
-        sendClickableCommand(event.getEntity(), "Click to &2[GET] &f some of your lost items back", "deathinventory");
+        message(event.getEntity(),"Oh no! You were knocked out unconscious and lost some items");
+        sendClickableCommand(event.getEntity(), "&9[FarmersLife] &6Click to &2[GET] &6 some of your lost items back", "deathinventory");
         giveCompass(event.getEntity());
     }
     @EventHandler
-    public void onInteract(PlayerInteractAtEntityEvent e) {
-        if (e.getPlayer().getInventory().getItemInMainHand().getType() == Material.NAME_TAG) {
-            String oldName = e.getRightClicked().getCustomName();
-            String name = e.getPlayer().getInventory().getItemInMainHand().getItemMeta().getDisplayName();
+    public void onInteract(PlayerInteractAtEntityEvent event) {
+        if (event.getPlayer().getInventory().getItemInMainHand().getType() == Material.NAME_TAG) {
+            String oldName = event.getRightClicked().getCustomName();
+            String name = event.getPlayer().getInventory().getItemInMainHand().getItemMeta().getDisplayName();
             Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(Objects.requireNonNull(Bukkit.getPluginManager().getPlugin("FarmersLife")), new Runnable() {
                 public void run() {
                     Random random = new Random();
                     if (!animalNames.containsKey(oldName)) {
                         String newName = name + " #" + random.nextInt(100000);
-                        e.getRightClicked().setCustomName(newName);
+                        event.getRightClicked().setCustomName(newName);
                         if (oldName != null && !animalNames.containsKey(oldName)) {
-                            e.getPlayer().sendMessage("You fixed " + oldName);
+                            message(event.getPlayer(),"You fixed " + oldName);
                             animalNames.put(newName, 250);
                         } else
                             animalNames.put(newName, 0);
                     } else {
-                        e.getRightClicked().setCustomName(oldName);
-                        e.setCancelled(true);
-                        e.getPlayer().getInventory().getItemInMainHand().add(1);
+                        event.getRightClicked().setCustomName(oldName);
+                        event.setCancelled(true);
+                        event.getPlayer().getInventory().getItemInMainHand().add(1);
                     }
                 }
             }, 2);
-        } else if (e.getRightClicked().getCustomName() != null) {
-            if (!interactQueue.contains(e.getPlayer().getName())) {
-                interactQueue.add(e.getPlayer().getName());
-                String name = e.getRightClicked().getCustomName();
+        } else if (event.getRightClicked().getCustomName() != null) {
+            if (!interactQueue.contains(event.getPlayer().getName())) {
+                interactQueue.add(event.getPlayer().getName());
+                String name = event.getRightClicked().getCustomName();
                 for (String key : animalNames.keySet()) {
                     if (key.equals(name)) {
-                        e.getPlayer().sendMessage(name + " is " + animalNames.get(name) + " days old. " +
-                                "It is worth $" + (int) Math.floor(calculateAnimalPayout(e.getRightClicked(), getPlayer(e.getPlayer().getName()))));
+                         message(event.getPlayer(),name + " " + animalNames.get(name) + " days " +
+                                "$" + (int) Math.floor(calculateAnimalPayout(event.getRightClicked(), getPlayer(event.getPlayer().getName()))));
                     }
                 }
             } else {
-                interactQueue.remove(e.getPlayer().getName());
+                interactQueue.remove(event.getPlayer().getName());
             }
         }
     }
@@ -344,7 +343,7 @@ public class Events extends Functions implements Listener {
                 if (isDepositBox(event.getClickedInventory().getLocation())) {
                     event.setCancelled(true);
                     if (!containsItem(depositCrops, event.getWhoClicked().getItemOnCursor())) {
-                        getPlayer(getDepositBox(event.getClickedInventory().getLocation()).getOwner()).getPlayer().sendMessage("That item cannot be sold yet.");
+                        message(getPlayer(getDepositBox(event.getClickedInventory().getLocation()).getOwner()).getPlayer(),"That item cannot be sold yet.");
                     } else
                         event.setCancelled(false);
                 }
@@ -352,7 +351,7 @@ public class Events extends Functions implements Listener {
                 if (isDepositBox(event.getWhoClicked().getOpenInventory().getTopInventory().getLocation())) {
                     event.setCancelled(true);
                     if (!containsItem(depositCrops, event.getCurrentItem())) {
-                        event.getWhoClicked().sendMessage("That item cannot be sold yet.");
+                        message(event.getWhoClicked(),"That item cannot be sold yet.");
                     } else
                         event.setCancelled(false);
                 }
@@ -413,16 +412,13 @@ public class Events extends Functions implements Listener {
                                 p.removeCash(5000);
                                 p.getPlayer().playSound(p.getPlayer().getLocation(), Sound.BLOCK_ENCHANTMENT_TABLE_USE, 3, 1);
                                 Skills.spawnFireworks(p.getPlayer().getLocation(), 1);
-                                event.getWhoClicked().sendMessage("You've bought a card pack");
+                                message(event.getWhoClicked(),"You've bought a card pack");
                                 giveCardPack(p.getPlayer());
                             } else {
-                                event.getWhoClicked().sendMessage("You don't have enough money for a card pack");
+                                message(event.getWhoClicked(),"You don't have enough money for a card pack");
                             }
                         }
                     }
-                } else if (clicked.getType() == Material.EMERALD_BLOCK) {
-                    event.setCancelled(true);
-                    ((org.bukkit.entity.Player) event.getWhoClicked()).getPlayer().sendMessage("This feature is coming soon and then you can degen all you like");
                 } else if (clicked.getType() == Material.OAK_FENCE) {
                     event.setCancelled(true);
                     event.getWhoClicked().closeInventory();
@@ -441,7 +437,7 @@ public class Events extends Functions implements Listener {
                                 p.removeCash(15000);
                                 p.getPlayer().getInventory().addItem(spawnerInventory.getItem(1));
                             } else
-                                p.getPlayer().sendMessage("Sorry, you don't have enough money to buy a spawner");
+                                message(p.getPlayer(),"Sorry, you don't have enough money to buy a spawner");
                             event.setCancelled(true);
                         }
                     }
@@ -449,7 +445,6 @@ public class Events extends Functions implements Listener {
             }
 
             if ((inventory == buyInventory || inventory == buyInventory2 || inventory == seedsInventory) && (event.getClickedInventory() == buyInventory2 || event.getClickedInventory() == buyInventory || event.getClickedInventory() == seedsInventory)) {
-                getLogger().info("clicked the buy inventory");
                 for (BuyItem item : buyItems) {
                     assert clicked != null;
                     if (item.getMaterial() == clicked.getType()) {
@@ -459,7 +454,7 @@ public class Events extends Functions implements Listener {
                                     if (getDeliveryBox(player) != null) {
                                         p.removeCash(item.getCost());
                                         ItemStack addingItem = new ItemStack(item.getMaterial(), item.getAmount());
-                                        ItemMeta meta = event.getCurrentItem().getItemMeta();
+                                        ItemMeta meta = Objects.requireNonNull(event.getCurrentItem()).getItemMeta();
                                         assert meta != null;
                                         meta.setDisplayName("Shop " + addingItem.getType().name());
                                         if (item.getMaterial() == Material.CARROT || item.getMaterial() == Material.POTATO)
@@ -468,13 +463,13 @@ public class Events extends Functions implements Listener {
                                             meta.setLore(null);
                                         addingItem.setItemMeta(meta);
 
-                                        getPlayer((org.bukkit.entity.Player) event.getWhoClicked()).getDeliveryOrder().add(addingItem);
-                                        event.getWhoClicked().sendMessage("Your order will arrive in your delivery box at 6am tomorrow");
+                                        Objects.requireNonNull(getPlayer((org.bukkit.entity.Player) event.getWhoClicked())).getDeliveryOrder().add(addingItem);
+                                        message(event.getWhoClicked(),"Your order will arrive in your delivery box at 6am tomorrow");
                                     } else {
                                         if (getDepositBoxes((org.bukkit.entity.Player) event.getWhoClicked()).size() == 0) {
-                                            event.getWhoClicked().sendMessage("You need a Deposit Box before you can order a delivery");
+                                            message(event.getWhoClicked(),"You need a Deposit Box before you can order a delivery");
                                         } else {
-                                            event.getWhoClicked().sendMessage("Set a delivery box to receive your items in. Type /box");
+                                            message(event.getWhoClicked(),"Set a delivery box to receive your items in. Type /box");
                                         }
                                     }
                                 }

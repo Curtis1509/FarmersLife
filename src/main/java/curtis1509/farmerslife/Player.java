@@ -7,6 +7,7 @@ import org.bukkit.inventory.ItemStack;
 
 import java.util.LinkedList;
 
+import static curtis1509.farmerslife.FarmersLife.*;
 import static org.bukkit.Bukkit.getLogger;
 
 public class Player {
@@ -31,7 +32,7 @@ public class Player {
         scoreboard = new JPerPlayerMethodBasedScoreboard();
         scoreboard.setTitle(player, "&aFarmers HUD");
         scoreboard.setLines(
-                player, "&6$" + Functions.economy.getBalance(player)
+                player, "&6$" + economy.getBalance(player)
         );
         scoreboard.addPlayer(player);
         scoreboard.updateScoreboard();
@@ -64,7 +65,7 @@ public class Player {
         scoreboard = new JPerPlayerMethodBasedScoreboard();
         scoreboard.setTitle(player, "&aFarmers HUD");
         scoreboard.setLines(
-                player, "&6$" + Functions.economy.getBalance(player)
+                player, "&6$" + economy.getBalance(player)
         );
         scoreboard.addPlayer(player);
         scoreboard.updateScoreboard();
@@ -92,20 +93,20 @@ public class Player {
     }
 
     public void removeCash(double amount) {
-        Functions.economy.withdrawPlayer(player, amount);
+        economy.withdrawPlayer(player, amount);
         scoreboard.setLines(
-                player, "&a$&6" + Functions.economy.getBalance(player)
+                player, "&a$&6" + economy.getBalance(player)
         );
         scoreboard.updateScoreboard();
     }
 
     public double getCash() {
-        return Functions.economy.getBalance(player);
+        return economy.getBalance(player);
     }
 
     public void updateScoreboard(String time) {
         scoreboard.setLines(
-                player, "&6$" + Math.floor(Functions.economy.getBalance(player)), time, "Weather Season: &6" + Functions.weather, "Days Remaining: &6" + Functions.dayNumber
+                player, "&6$" + Math.floor(economy.getBalance(player)), time, "Weather Season: &6" + weather, "Days Remaining: &6" + dayNumber
         );
         scoreboard.updateScoreboard();
     }
@@ -123,10 +124,10 @@ public class Player {
     }
 
     public void addCash(double cash) {
-        Functions.economy.depositPlayer(player, cash);
+        economy.depositPlayer(player, cash);
         scoreboard.setTitle(player, "Farmers HUD");
         scoreboard.setLines(
-                player, "$" + Math.floor(Functions.economy.getBalance(player)));
+                player, "$" + Math.floor(economy.getBalance(player)));
         scoreboard.updateScoreboard();
     }
 

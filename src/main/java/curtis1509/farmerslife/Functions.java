@@ -1,16 +1,10 @@
 package curtis1509.farmerslife;
 
-import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.milkbowl.vault.economy.Economy;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.block.CreatureSpawner;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Entity;
@@ -25,38 +19,10 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
 
+import static curtis1509.farmerslife.FarmersLife.*;
 import static org.bukkit.Bukkit.getLogger;
 
-public class Functions implements CommandExecutor {
-
-    public static HashMap<String, String> waitingForPlayer = new HashMap<>();
-    public static HashMap<String, Location> waitingForPenB = new HashMap<>();
-    public static HashMap<String, Integer> animalNames = new HashMap<>();
-    public static HashMap<EntityType, Double> animalCost = new HashMap<>();
-    public static Inventory menuInventory = Bukkit.createInventory(null, 9, "Farmers Life Menu");
-    public static Inventory spawnerInventory = Bukkit.createInventory(null, 9, "Buy Spawners Inventory");
-    public static Inventory seedsInventory = Bukkit.createInventory(null, 18, "Seeds");
-    public static Inventory buyInventory = Bukkit.createInventory(null, 9, "Buy");
-    public static Inventory buyInventory2 = Bukkit.createInventory(null, 54, "Buy");
-    public static LinkedList<DepositCrop> depositCrops = new LinkedList<>();
-    public static LinkedList<curtis1509.farmerslife.Player> players = new LinkedList<>();
-    public static LinkedList<BuyItem> buyItems = new LinkedList<>();
-    public static LinkedList<String> interactQueue = new LinkedList<>();
-    public static LinkedList<String> punishLogout = new LinkedList<>();
-    public static LinkedList<DepositBox> depositBoxes = new LinkedList<>();
-    public static LinkedList<Pen> pens = new LinkedList<>();
-    public static LinkedList<Location> shopBlockLocations = new LinkedList<>();
-    public static String weather = "Wet";
-    public static String bestPlayerName = "";
-    public static long day;
-    public static int dayNumber;
-    public static World world;
-    public static FileReader fileReader = new FileReader();
-    public static boolean sleep = false;
-    public static boolean stormingAllDay;
-    public static double bestCashAmount = 0;
-    public static DefaultFiles defaultFiles = new DefaultFiles();
-    public static Economy economy;
+public class Functions {
 
     public static double calculateAnimalPayout(Entity e, curtis1509.farmerslife.Player player) {
         double multiplier = animalNames.get(e.getCustomName()) * 0.15;
@@ -92,20 +58,7 @@ public class Functions implements CommandExecutor {
         return null;
     }
 
-    public static void loadSpawnerShop() {
-        ItemStack item = new ItemStack(Material.SPAWNER, 1);
-        ItemMeta itemMeta = item.getItemMeta();
-        itemMeta.setDisplayName("Zombie Spawner | $15,000");
-        item.setItemMeta(itemMeta);
-        spawnerInventory.setItem(1, item);
-        BlockStateMeta blockMeta = (BlockStateMeta) Objects.requireNonNull(spawnerInventory.getItem(1)).getItemMeta();
-        CreatureSpawner spawner = (CreatureSpawner) blockMeta.getBlockState();
-        spawner.setSpawnedType(EntityType.ZOMBIE);
-        blockMeta.setBlockState(spawner);
-        item.setItemMeta(blockMeta);
-        spawnerInventory.setItem(1, item);
-    }
-
+    //MARKED FOR REWORK
     public static void loadDepositShop() throws IOException {
         FileReader fileReader = new FileReader();
         String dataIn = "";
@@ -130,6 +83,7 @@ public class Functions implements CommandExecutor {
         }
     }
 
+    //MARKED FOR REWORK
     public static void loadSeedsShop() throws IOException {
         FileReader fileReader = new FileReader();
         String dataIn = "";
@@ -163,7 +117,6 @@ public class Functions implements CommandExecutor {
         } catch (IOException e) {
             System.out.println("Failed To Load Shops");
         }
-        loadSpawnerShop();
     }
 
     public static void addToInventory(Inventory inventory, Material material, int price, int amount) {
@@ -228,11 +181,6 @@ public class Functions implements CommandExecutor {
         player.sendTitle(ChatColor.GOLD + "Farmers Life", ChatColor.BLUE + weather + " Season");
         if (!playerExists)
             players.add(new curtis1509.farmerslife.Player(player, fileReader.loadPlayerSkillProfits(player.getName()), fileReader.loadPerk(player.getName(), "protection"), fileReader.loadPerk(player.getName(), "bedperk"), fileReader.loadPerk(player.getName(), "teleport")));
-
-        if (world.hasStorm())
-            player.sendMessage("We are currently in a " + weather + " weather season. It is storming today");
-        else
-            player.sendMessage("We are currently in a " + weather + " weather season. It is sunny today");
 
         player.getInventory().setItem(8, new ItemStack(Material.COMPASS, 1));
         ItemMeta compassMeta = player.getInventory().getItem(8).getItemMeta();
@@ -324,7 +272,6 @@ public class Functions implements CommandExecutor {
                 golemIronSoldToday++;
             }
             getPlayer(owner).golemIronSoldToday += golemIronSoldToday;
-            getLogger().info("Total For All Golem Iron: " + money);
         }
         return money;
     }
@@ -394,12 +341,6 @@ public class Functions implements CommandExecutor {
         }
     }
 
-    public static void broadcast(String message) {
-        for (org.bukkit.entity.Player player : Bukkit.getOnlinePlayers()) {
-            player.sendMessage(message);
-        }
-    }
-
     public static boolean withinRangeOfBed(curtis1509.farmerslife.Player player) {
         int x = player.getPlayer().getLocation().getBlockX();
         int y = player.getPlayer().getLocation().getBlockY();
@@ -448,76 +389,17 @@ public class Functions implements CommandExecutor {
         }
     }
 
-    @Override
-    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-        if (cmd.getName().equalsIgnoreCase("box")) {
-            if (!waitingForPlayer.containsKey(sender.getName())) {
-                waitingForPlayer.put(sender.getName(), "box");
-                sender.sendMessage("Great! Click a chest to make it your deposit box.");
-                Thread wait = new Thread(() -> {
-                    try {
-                        Thread.sleep(10000);
-                        if (waitingForPlayer.get(sender.getName()).equals("box")) {
-                            sender.sendMessage("You took too long to select a chest. Try again!");
-                            waitingForPlayer.remove(sender.getName());
-                        }
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                });
-                wait.start();
-                return true;
-            }
-
-        } else if (cmd.getName().equalsIgnoreCase("farm")) {
-            Objects.requireNonNull(Bukkit.getPlayer(sender.getName())).openInventory(menuInventory);
-        } else if (cmd.getName().equalsIgnoreCase("reloadscores")) {
-            for (curtis1509.farmerslife.Player p : players) {
-                p.reloadScoreboard();
-            }
-        } else if (cmd.getName().equalsIgnoreCase("deathinventory") || cmd.getName().equalsIgnoreCase("di")) {
-            for (curtis1509.farmerslife.Player player : players) {
-                if (player.getName().equals(sender.getName()) && player.getDeathInventory() != null) {
-                    Objects.requireNonNull(Bukkit.getPlayer(sender.getName())).openInventory(player.getDeathInventory());
-                }
-            }
-        } else if (cmd.getName().equalsIgnoreCase("reloadshop")) {
-            Functions.reloadShop();
-            sender.sendMessage("Shop Reloaded");
-        } else if (cmd.getName().equalsIgnoreCase("pen") && !waitingForPlayer.containsKey(sender.getName())) {
-            sender.sendMessage("Left click the first corner of your selling pen");
-            waitingForPlayer.put(sender.getName(), "pen");
-            Thread wait = new Thread(() -> {
-                try {
-                    Thread.sleep(20000);
-                    if (waitingForPlayer.get(sender.getName()).equals("pen")) {
-                        sender.sendMessage("You took too long to select a pen. Try again!");
-                        waitingForPlayer.remove(sender.getName());
-                    }
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            });
-            wait.start();
-            return true;
-        } else if (cmd.getName().equalsIgnoreCase("deletepen")) {
-            Pen deletePen = null;
-            for (Pen pen : pens) {
-                if (pen.insidePen(Functions.getPlayer(sender.getName()).getPlayer().getLocation())) {
-                    deletePen = pen;
-                    sender.sendMessage("You've removed your pen");
-                }
-            }
-            if (deletePen != null) {
-                try {
-                    pens.remove(deletePen);
-                    fileReader.removePenData(deletePen);
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-            return true;
+    public static void broadcast(String message) {
+        for (org.bukkit.entity.Player player : Bukkit.getOnlinePlayers()) {
+            message(player, message);
         }
-        return false;
     }
+    public static void message(org.bukkit.entity.Player player, String message){
+        player.sendMessage(ChatColor.BLUE + "[FarmersLife] " + ChatColor.YELLOW + message);
+    }
+
+    public static void message(CommandSender player, String message){
+        player.sendMessage(ChatColor.BLUE + "[FarmersLife] " + ChatColor.YELLOW + message);
+    }
+
 }

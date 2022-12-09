@@ -14,6 +14,9 @@ import org.bukkit.inventory.meta.ItemMeta;
 import java.util.Collections;
 import java.util.Objects;
 
+import static curtis1509.farmerslife.FarmersLife.economy;
+import static curtis1509.farmerslife.Functions.message;
+
 public class Skills {
 
     public Inventory skillsInventory = Bukkit.createInventory(null, 18, "Skills");
@@ -70,9 +73,9 @@ public class Skills {
             cost *= 1.05;
         }
 
-        if (Functions.economy.getBalance(player) > cost) {
+        if (economy.getBalance(player) > cost) {
             if (Objects.requireNonNull(player.getAttribute(Attribute.GENERIC_MAX_HEALTH)).getValue() < 60) {
-                Functions.economy.withdrawPlayer(player, cost);
+                economy.withdrawPlayer(player, cost);
                 Objects.requireNonNull(player.getAttribute(Attribute.GENERIC_MAX_HEALTH)).setBaseValue(health*2 + 2);
                 skillsInventory.remove(Material.APPLE);
                 cost += 1000;
@@ -84,7 +87,7 @@ public class Skills {
                 spawnFireworks(player.getLocation(),1);
                 player.setHealth(Objects.requireNonNull(player.getAttribute(Attribute.GENERIC_MAX_HEALTH)).getValue());
                 return true;
-            } else player.sendMessage("You have the maximum 30/30 hearts");
+            } else message(player,"You have the maximum 30/30 hearts");
         } else
             player.sendMessage("Sorry, you don't have enough money to buy more health.");
         return false;

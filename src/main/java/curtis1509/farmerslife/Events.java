@@ -302,7 +302,7 @@ public class Events extends Functions implements Listener {
         if (e.getPlayer().getInventory().getItemInMainHand().getType() == Material.NAME_TAG) {
             String oldName = e.getRightClicked().getCustomName();
             String name = e.getPlayer().getInventory().getItemInMainHand().getItemMeta().getDisplayName();
-            Bukkit.getServer().getScheduler().scheduleSyncDelayedTask((Plugin) this, new Runnable() {
+            Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(Objects.requireNonNull(Bukkit.getPluginManager().getPlugin("FarmersLife")), new Runnable() {
                 public void run() {
                     Random random = new Random();
                     if (!animalNames.containsKey(oldName)) {

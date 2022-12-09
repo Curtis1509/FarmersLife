@@ -96,15 +96,15 @@ public class FileReader {
         weatherConfig.set("day.count", day);
         weatherConfig.save(weatherFileT);
         if (day > 20 && day < 40) {
-            FarmersLife.weather = "Dry";
+            Functions.weather = "Dry";
         } else if (day > 0 && day < 20) {
-            FarmersLife.weather = "Wet";
+            Functions.weather = "Wet";
         }
 
         if (day <= 20)
-            FarmersLife.dayNumber = 20 - day;
+            Functions.dayNumber = 20 - day;
         else
-            FarmersLife.dayNumber = 40 - day;
+            Functions.dayNumber = 40 - day;
     }
 
     public void getWeather() throws IOException {
@@ -114,21 +114,21 @@ public class FileReader {
             day = 1;
             weatherConfig.set("day.count", 1);
             weatherConfig.save(weatherFileT);
-            FarmersLife.weather = "Wet";
+            Functions.weather = "Wet";
         }
         if (day > 20 && day < 40) {
-            FarmersLife.weather = "Dry";
+            Functions.weather = "Dry";
         } else if (day > 0 && day < 20) {
-            FarmersLife.weather = "Wet";
+            Functions.weather = "Wet";
         } else if (day > 40) {
-            FarmersLife.weather = "Wet";
+            Functions.weather = "Wet";
             weatherConfig.set("day.count", 1);
             weatherConfig.save(weatherFileT);
         }
         if (day <= 20)
-            FarmersLife.dayNumber = 20 - day;
+            Functions.dayNumber = 20 - day;
         else
-            FarmersLife.dayNumber = 40 - day;
+            Functions.dayNumber = 40 - day;
     }
 
     public void saveStats(long day, String playerName) throws IOException {
@@ -145,7 +145,7 @@ public class FileReader {
             }
             statsConfig.set(day + "." + playerName + "." + "total", "$" + total);
             double multiplier = 0;
-            for (Player p : FarmersLife.players) {
+            for (Player p : Functions.players) {
                 if (p.getName().equals(playerName))
                     multiplier = p.getSkills().skillProfits.getMultiplier();
             }
@@ -153,21 +153,11 @@ public class FileReader {
             statsConfig.save(statsFileT);
             stats.clear();
 
-            for (Player p : FarmersLife.players) {
+            for (Player p : Functions.players) {
                 if (p.getName().equals(playerName))
                     p.addToTodaysCash(total * multiplier);
             }
         }
-    }
-
-    public int loadPlayerSkillProfits(String playerName) {
-        FileConfiguration playerConfig = YamlConfiguration.loadConfiguration(playersFileT);
-        int level;
-        if (playerConfig.contains(playerName + ".profit"))
-            level = playerConfig.getInt(playerName + ".profit");
-        else
-            level = 0;
-        return level;
     }
 
     public void removeDepositData(DepositBox depositBox) throws IOException {
@@ -177,7 +167,7 @@ public class FileReader {
             depositConfig.set(id, null);
         }
         depositConfig.save(depositsFileT);
-        FarmersLife.depositBoxes.remove(depositBox);
+        Functions.depositBoxes.remove(depositBox);
     }
 
     public void removePenData(Pen pen) throws IOException {
@@ -187,7 +177,7 @@ public class FileReader {
             depositConfig.set(id, null);
         }
         depositConfig.save(depositsFileT);
-        FarmersLife.pens.remove(pen);
+        Functions.pens.remove(pen);
     }
 
     public void removeNametagData(String nametag) throws IOException {
@@ -197,7 +187,7 @@ public class FileReader {
             depositConfig.set(id, null);
         }
         depositConfig.save(depositsFileT);
-        FarmersLife.animalNames.remove(nametag);
+        Functions.animalNames.remove(nametag);
     }
 
     public void savePlayers() {
@@ -207,7 +197,7 @@ public class FileReader {
         try {
 
             FileConfiguration playerConfig = YamlConfiguration.loadConfiguration(playersFileT);
-            for (Player player : FarmersLife.players) {
+            for (Player player : Functions.players) {
                 playerConfig.set(player.getName() + ".cash", player.getCash());
                 double previousCash = playerConfig.getDouble("alltimecash");
                 playerConfig.set(player.getName() + ".alltimecash", player.getCash() + previousCash);
@@ -218,7 +208,7 @@ public class FileReader {
             playerConfig.save(playersFileT);
 
             FileConfiguration depositConfig = YamlConfiguration.loadConfiguration(depositsFileT);
-            for (DepositBox deposits : FarmersLife.depositBoxes) {
+            for (DepositBox deposits : Functions.depositBoxes) {
                 String id = "deposits." + deposits.getID();
                 depositConfig.set(id + ".owner", deposits.getOwner());
                 depositConfig.set(id + ".shipment", deposits.isShipmentBox());
@@ -227,7 +217,7 @@ public class FileReader {
                 depositConfig.set(id + ".z", deposits.getDepositBox().getLocation().getBlockZ());
             }
 
-            for (Pen pen : FarmersLife.pens) {
+            for (Pen pen : Functions.pens) {
                 String id = "pens." + pen.id;
                 depositConfig.set(id + ".owner", pen.owner);
                 depositConfig.set(id + ".a.x", pen.pointA.getBlockX());
@@ -239,9 +229,9 @@ public class FileReader {
                 depositConfig.set(id + ".b.z", pen.pointB.getBlockZ());
             }
 
-            for (String key : FarmersLife.animalNames.keySet()) {
+            for (String key : Functions.animalNames.keySet()) {
                 String id = "nametags." + key;
-                depositConfig.set(id + ".days", FarmersLife.animalNames.get(key));
+                depositConfig.set(id + ".days", Functions.animalNames.get(key));
             }
 
             depositConfig.save(depositsFileT);
@@ -262,11 +252,11 @@ public class FileReader {
 
             for (String child : childSections) {
                 int id = Integer.parseInt(child);
-                Location location = new Location(FarmersLife.world, depositConfig.getInt("deposits." + child + ".x"), depositConfig.getInt("deposits." + child + ".y"), depositConfig.getInt("deposits." + child + ".z"));
+                Location location = new Location(Functions.world, depositConfig.getInt("deposits." + child + ".x"), depositConfig.getInt("deposits." + child + ".y"), depositConfig.getInt("deposits." + child + ".z"));
                 String owner = depositConfig.getString("deposits." + child + ".owner");
                 boolean shipment = depositConfig.getBoolean("deposits." + child + ".shipment");
                 Block chest = location.getBlock();
-                FarmersLife.depositBoxes.add(new DepositBox(chest, owner, id,shipment));
+                Functions.depositBoxes.add(new DepositBox(chest, owner, id,shipment));
             }
         } catch (NullPointerException e) {
             getLogger().info("Deposit Box File has no contents");
@@ -281,10 +271,10 @@ public class FileReader {
 
             for (String child : childSections) {
                 int id = Integer.parseInt(child);
-                Location locationA = new Location(FarmersLife.world, depositConfig.getInt("pens." + child + ".a.x"), depositConfig.getInt("pens." + child + ".a.y"), depositConfig.getInt("pens." + child + ".a.z"));
-                Location locationB = new Location(FarmersLife.world, depositConfig.getInt("pens." + child + ".b.x"), depositConfig.getInt("pens." + child + ".b.y"), depositConfig.getInt("pens." + child + ".b.z"));
+                Location locationA = new Location(Functions.world, depositConfig.getInt("pens." + child + ".a.x"), depositConfig.getInt("pens." + child + ".a.y"), depositConfig.getInt("pens." + child + ".a.z"));
+                Location locationB = new Location(Functions.world, depositConfig.getInt("pens." + child + ".b.x"), depositConfig.getInt("pens." + child + ".b.y"), depositConfig.getInt("pens." + child + ".b.z"));
                 String owner = depositConfig.getString("pens." + child + ".owner");
-                FarmersLife.pens.add(new Pen(locationA, locationB, owner, id));
+                Functions.pens.add(new Pen(locationA, locationB, owner, id));
             }
         } catch (NullPointerException e) {
             getLogger().info("Pens File has no contents");
@@ -299,35 +289,21 @@ public class FileReader {
 
             for (String child : childSections) {
                 int days = depositConfig.getInt("nametags." + child + ".days");
-                FarmersLife.animalNames.put(child,days);
+                Functions.animalNames.put(child,days);
             }
         } catch (NullPointerException e) {
             getLogger().info("Nametags File has no contents");
         }
     }
 
-    public boolean loadProtection(String playerName) {
+    public int loadPlayerSkillProfits(String playerName) {
         FileConfiguration playerConfig = YamlConfiguration.loadConfiguration(playersFileT);
-        boolean protection;
-        if (playerConfig.contains(playerName + ".protection"))
-            protection = playerConfig.getBoolean(playerName + ".protection");
-        else {
-            protection = false;
-            playerConfig.set(playerName + ".protection", false);
-        }
-        return protection;
-    }
-
-    public boolean loadBedPerk(String playerName) {
-        FileConfiguration playerConfig = YamlConfiguration.loadConfiguration(playersFileT);
-        boolean bedperk;
-        if (playerConfig.contains(playerName + ".bedperk"))
-            bedperk = playerConfig.getBoolean(playerName + ".bedperk");
-        else {
-            bedperk = false;
-            playerConfig.set(playerName + ".bedperk", false);
-        }
-        return bedperk;
+        int level;
+        if (playerConfig.contains(playerName + ".profit"))
+            level = playerConfig.getInt(playerName + ".profit");
+        else
+            level = 0;
+        return level;
     }
 
     public boolean loadPerk(String playerName, String perkName) {
@@ -346,88 +322,91 @@ public class FileReader {
         FileConfiguration costConfig = YamlConfiguration.loadConfiguration(new File("plugins/FarmersLife/animalCosts.yml"));
         Set<String> items = Objects.requireNonNull(costConfig.getConfigurationSection("animals")).getKeys(false);
         if (costConfig.contains("animals.cow")){
-            FarmersLife.animalCost.put(EntityType.COW, costConfig.getDouble("animals.cow.cost"));
+            Functions.animalCost.put(EntityType.COW, costConfig.getDouble("animals.cow.cost"));
         }
         if (costConfig.contains("animals.pig")){
-            FarmersLife.animalCost.put(EntityType.PIG, costConfig.getDouble("animals.pig.cost"));
+            Functions.animalCost.put(EntityType.PIG, costConfig.getDouble("animals.pig.cost"));
+        }
+        if (costConfig.contains("animals.sheep")){
+            Functions.animalCost.put(EntityType.SHEEP, costConfig.getDouble("animals.sheep.cost"));
         }
         if (costConfig.contains("animals.panda")){
-            FarmersLife.animalCost.put(EntityType.PANDA, costConfig.getDouble("animals.panda.cost"));
+            Functions.animalCost.put(EntityType.PANDA, costConfig.getDouble("animals.panda.cost"));
         }
         if (costConfig.contains("animals.donkey")){
-            FarmersLife.animalCost.put(EntityType.DONKEY, costConfig.getDouble("animals.donkey.cost"));
+            Functions.animalCost.put(EntityType.DONKEY, costConfig.getDouble("animals.donkey.cost"));
         }
         if (costConfig.contains("animals.horse")){
-            FarmersLife.animalCost.put(EntityType.HORSE, costConfig.getDouble("animals.horse.cost"));
+            Functions.animalCost.put(EntityType.HORSE, costConfig.getDouble("animals.horse.cost"));
         }
         if (costConfig.contains("animals.chicken")){
-            FarmersLife.animalCost.put(EntityType.CHICKEN, costConfig.getDouble("animals.chicken.cost"));
+            Functions.animalCost.put(EntityType.CHICKEN, costConfig.getDouble("animals.chicken.cost"));
         }
         if (costConfig.contains("animals.villager")){
-            FarmersLife.animalCost.put(EntityType.VILLAGER, costConfig.getDouble("animals.villager.cost"));
+            Functions.animalCost.put(EntityType.VILLAGER, costConfig.getDouble("animals.villager.cost"));
         }
         if (costConfig.contains("animals.cat")){
-            FarmersLife.animalCost.put(EntityType.CAT, costConfig.getDouble("animals.cat.cost"));
+            Functions.animalCost.put(EntityType.CAT, costConfig.getDouble("animals.cat.cost"));
         }
         if (costConfig.contains("animals.dog")){
-            FarmersLife.animalCost.put(EntityType.WOLF, costConfig.getDouble("animals.dog.cost"));
+            Functions.animalCost.put(EntityType.WOLF, costConfig.getDouble("animals.dog.cost"));
         }
         if (costConfig.contains("animals.axolotl")){
-            FarmersLife.animalCost.put(EntityType.AXOLOTL, costConfig.getDouble("animals.axolotl.cost"));
+            Functions.animalCost.put(EntityType.AXOLOTL, costConfig.getDouble("animals.axolotl.cost"));
         }
         if (costConfig.contains("animals.allay")){
-            FarmersLife.animalCost.put(EntityType.ALLAY, costConfig.getDouble("animals.allay.cost"));
+            Functions.animalCost.put(EntityType.ALLAY, costConfig.getDouble("animals.allay.cost"));
         }
         if (costConfig.contains("animals.bee")){
-            FarmersLife.animalCost.put(EntityType.BEE, costConfig.getDouble("animals.bee.cost"));
+            Functions.animalCost.put(EntityType.BEE, costConfig.getDouble("animals.bee.cost"));
         }
         if (costConfig.contains("animals.bat")){
-            FarmersLife.animalCost.put(EntityType.BAT, costConfig.getDouble("animals.bat.cost"));
+            Functions.animalCost.put(EntityType.BAT, costConfig.getDouble("animals.bat.cost"));
         }
         if (costConfig.contains("animals.dolphin")){
-            FarmersLife.animalCost.put(EntityType.DOLPHIN, costConfig.getDouble("animals.dolphin.cost"));
+            Functions.animalCost.put(EntityType.DOLPHIN, costConfig.getDouble("animals.dolphin.cost"));
         }
         if (costConfig.contains("animals.tropicalfish")){
-            FarmersLife.animalCost.put(EntityType.TROPICAL_FISH, costConfig.getDouble("animals.tropicalfish.cost"));
+            Functions.animalCost.put(EntityType.TROPICAL_FISH, costConfig.getDouble("animals.tropicalfish.cost"));
         }
         if (costConfig.contains("animals.pufferfish")){
-            FarmersLife.animalCost.put(EntityType.PUFFERFISH, costConfig.getDouble("animals.pufferfish.cost"));
+            Functions.animalCost.put(EntityType.PUFFERFISH, costConfig.getDouble("animals.pufferfish.cost"));
         }
         if (costConfig.contains("animals.salmon")){
-            FarmersLife.animalCost.put(EntityType.SALMON, costConfig.getDouble("animals.salmon.cost"));
+            Functions.animalCost.put(EntityType.SALMON, costConfig.getDouble("animals.salmon.cost"));
         }
         if (costConfig.contains("animals.cod")){
-            FarmersLife.animalCost.put(EntityType.COD, costConfig.getDouble("animals.cod.cost"));
+            Functions.animalCost.put(EntityType.COD, costConfig.getDouble("animals.cod.cost"));
         }
         if (costConfig.contains("animals.fox")){
-            FarmersLife.animalCost.put(EntityType.FOX, costConfig.getDouble("animals.fox.cost"));
+            Functions.animalCost.put(EntityType.FOX, costConfig.getDouble("animals.fox.cost"));
         }
         if (costConfig.contains("animals.rabbit")){
-            FarmersLife.animalCost.put(EntityType.RABBIT, costConfig.getDouble("animals.rabbit.cost"));
+            Functions.animalCost.put(EntityType.RABBIT, costConfig.getDouble("animals.rabbit.cost"));
         }
         if (costConfig.contains("animals.frog")){
-            FarmersLife.animalCost.put(EntityType.FROG, costConfig.getDouble("animals.frog.cost"));
+            Functions.animalCost.put(EntityType.FROG, costConfig.getDouble("animals.frog.cost"));
         }
         if (costConfig.contains("animals.skeletonhorse")){
-            FarmersLife.animalCost.put(EntityType.SKELETON_HORSE, costConfig.getDouble("animals.skeletonhorse.cost"));
+            Functions.animalCost.put(EntityType.SKELETON_HORSE, costConfig.getDouble("animals.skeletonhorse.cost"));
         }
         if (costConfig.contains("animals.parrot")){
-            FarmersLife.animalCost.put(EntityType.PARROT, costConfig.getDouble("animals.parrot.cost"));
+            Functions.animalCost.put(EntityType.PARROT, costConfig.getDouble("animals.parrot.cost"));
         }
         if (costConfig.contains("animals.llama")){
-            FarmersLife.animalCost.put(EntityType.LLAMA, costConfig.getDouble("animals.llama.cost"));
+            Functions.animalCost.put(EntityType.LLAMA, costConfig.getDouble("animals.llama.cost"));
         }
         if (costConfig.contains("animals.goat")){
-            FarmersLife.animalCost.put(EntityType.GOAT, costConfig.getDouble("animals.goat.cost"));
+            Functions.animalCost.put(EntityType.GOAT, costConfig.getDouble("animals.goat.cost"));
         }
         if (costConfig.contains("animals.mule")){
-            FarmersLife.animalCost.put(EntityType.MULE, costConfig.getDouble("animals.mule.cost"));
+            Functions.animalCost.put(EntityType.MULE, costConfig.getDouble("animals.mule.cost"));
         }
         if (costConfig.contains("animals.mooshroom")){
-            FarmersLife.animalCost.put(EntityType.MUSHROOM_COW, costConfig.getDouble("animals.mooshroom.cost"));
+            Functions.animalCost.put(EntityType.MUSHROOM_COW, costConfig.getDouble("animals.mooshroom.cost"));
         }
         if (costConfig.contains("animals.squid")){
-            FarmersLife.animalCost.put(EntityType.SQUID, costConfig.getDouble("animals.squid.cost"));
+            Functions.animalCost.put(EntityType.SQUID, costConfig.getDouble("animals.squid.cost"));
         }
     }
     public void loadBuyShop(){
@@ -437,14 +416,14 @@ public class FileReader {
         double defaultShopChance = shopConfig.getDouble("shopchance");
         double defaultSpecialChance = shopConfig.getDouble("specialchance");
         double defaultFreeChance = shopConfig.getDouble("freechance");
-        FarmersLife.buyInventory = Bukkit.createInventory(null, itemSlots, "Farmers Daily Shop");
+        Functions.buyInventory = Bukkit.createInventory(null, itemSlots, "Farmers Daily Shop");
         LinkedList<Material> selectedMaterials = new LinkedList<Material>();
         Random random = new Random();
         int failedItems = 0;
         while (selectedMaterials.size() < itemSlots && selectedMaterials.size() < items.size()-failedItems){
             failedItems = 0;
             for (String item : items){
-                Material material = FarmersLife.getMaterial(item);
+                Material material = Functions.getMaterial(item);
                 if (material != null){
                     if (!selectedMaterials.contains(material)) {
                         double shopChance = defaultShopChance;
@@ -482,7 +461,7 @@ public class FileReader {
                                 }
                             }
 
-                            FarmersLife.addToInventory(FarmersLife.buyInventory, material, cost, amount,isSpecial,originalCost-cost);
+                            Functions.addToInventory(Functions.buyInventory, material, cost, amount,isSpecial,originalCost-cost);
                             selectedMaterials.add(material);
                         }
                     }

@@ -32,7 +32,7 @@ public class Skills {
 
     public void populateSkillsInventory(Player player) {
         skillsInventory.addItem(createItem(Material.CHEST, "Profits " + (skillProfits.getLevel() + 1) + " | $" + (int) Math.ceil(skillProfits.cost),
-                "+0.1x | " + " Current: " + skillProfits.getMultiplier() + "x"));
+                "+0.1x | " + " Current: " + (double) Math.round(skillProfits.getMultiplier() * 100) / 100 + "x"));
         if (!protection)
             skillsInventory.addItem(createItem(Material.DIAMOND_CHESTPLATE, "Protection IV | $42,000",
                     "This is permanent and will be applied to any armour piece you craft."));
@@ -70,9 +70,9 @@ public class Skills {
             cost *= 1.05;
         }
 
-        if (FarmersLife.economy.getBalance(player) > cost) {
+        if (Functions.economy.getBalance(player) > cost) {
             if (Objects.requireNonNull(player.getAttribute(Attribute.GENERIC_MAX_HEALTH)).getValue() < 60) {
-                FarmersLife.economy.withdrawPlayer(player, cost);
+                Functions.economy.withdrawPlayer(player, cost);
                 Objects.requireNonNull(player.getAttribute(Attribute.GENERIC_MAX_HEALTH)).setBaseValue(health*2 + 2);
                 skillsInventory.remove(Material.APPLE);
                 cost += 1000;

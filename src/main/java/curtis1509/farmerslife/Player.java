@@ -31,7 +31,7 @@ public class Player {
         scoreboard = new JPerPlayerMethodBasedScoreboard();
         scoreboard.setTitle(player, "&aFarmers HUD");
         scoreboard.setLines(
-                player, "&6$" + FarmersLife.economy.getBalance(player)
+                player, "&6$" + Functions.economy.getBalance(player)
         );
         scoreboard.addPlayer(player);
         scoreboard.updateScoreboard();
@@ -64,7 +64,7 @@ public class Player {
         scoreboard = new JPerPlayerMethodBasedScoreboard();
         scoreboard.setTitle(player, "&aFarmers HUD");
         scoreboard.setLines(
-                player, "&6$" + FarmersLife.economy.getBalance(player)
+                player, "&6$" + Functions.economy.getBalance(player)
         );
         scoreboard.addPlayer(player);
         scoreboard.updateScoreboard();
@@ -92,20 +92,20 @@ public class Player {
     }
 
     public void removeCash(double amount) {
-        FarmersLife.economy.withdrawPlayer(player, amount);
+        Functions.economy.withdrawPlayer(player, amount);
         scoreboard.setLines(
-                player, "&a$&6" + FarmersLife.economy.getBalance(player)
+                player, "&a$&6" + Functions.economy.getBalance(player)
         );
         scoreboard.updateScoreboard();
     }
 
     public double getCash() {
-        return FarmersLife.economy.getBalance(player);
+        return Functions.economy.getBalance(player);
     }
 
     public void updateScoreboard(String time) {
         scoreboard.setLines(
-                player, "&6$" + Math.floor(FarmersLife.economy.getBalance(player)), time, "Weather Season: &6" + FarmersLife.weather, "Days Remaining: &6" + FarmersLife.dayNumber
+                player, "&6$" + Math.floor(Functions.economy.getBalance(player)), time, "Weather Season: &6" + Functions.weather, "Days Remaining: &6" + Functions.dayNumber
         );
         scoreboard.updateScoreboard();
     }
@@ -123,10 +123,10 @@ public class Player {
     }
 
     public void addCash(double cash) {
-        FarmersLife.economy.depositPlayer(player, cash);
+        Functions.economy.depositPlayer(player, cash);
         scoreboard.setTitle(player, "Farmers HUD");
         scoreboard.setLines(
-                player, "$" + Math.floor(FarmersLife.economy.getBalance(player)));
+                player, "$" + Math.floor(Functions.economy.getBalance(player)));
         scoreboard.updateScoreboard();
     }
 

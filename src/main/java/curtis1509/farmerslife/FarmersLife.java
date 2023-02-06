@@ -21,6 +21,7 @@ import java.util.LinkedList;
 import java.util.Objects;
 import java.util.Random;
 
+import static curtis1509.farmerslife.Functions.getPlayer;
 import static curtis1509.farmerslife.Functions.message;
 
 public class FarmersLife extends JavaPlugin implements CommandExecutor {
@@ -48,7 +49,7 @@ public class FarmersLife extends JavaPlugin implements CommandExecutor {
     public static int dayNumber;
     public static World world;
     public static FileReader fileReader = new FileReader();
-    public static boolean sleep = false;
+    public static boolean shouldDayEndEarly = false;
     public static boolean stormingAllDay;
     public static double bestCashAmount = 0;
     public static DefaultFiles defaultFiles = new DefaultFiles();
@@ -59,20 +60,12 @@ public class FarmersLife extends JavaPlugin implements CommandExecutor {
 
         getServer().getPluginManager().registerEvents(new Events(), this);
         world = getServer().getWorld("world");
-        update(this.getServer().getWorld("world"));
+        gameloop(this.getServer().getWorld("world"));
 
         setupEconomy();
         getLogger().info("Farmers Life has been enabled!");
-        fileReader.CreateFile();
-        try {
-            Functions.loadDepositShop();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
 
-        fileReader.loadDeposits();
-        fileReader.loadPens();
-        fileReader.loadNametags();
+        fileReader.FileProcessEnablePlugin();
 
         Functions.addToInventory(menuInventory, Material.WHEAT_SEEDS, "Seeds Shop", "", 0);
         Functions.addToInventory(menuInventory, Material.EXPERIENCE_BOTTLE, "Skills Shop", "", 1);
@@ -94,7 +87,7 @@ public class FarmersLife extends JavaPlugin implements CommandExecutor {
 
     @Override
     public void onDisable() {
-        fileReader.savePlayers();
+        fileReader.FileProcessDisablePlugin();
     }
 
     private boolean setupEconomy() {
@@ -109,238 +102,268 @@ public class FarmersLife extends JavaPlugin implements CommandExecutor {
         return economy != null;
     }
 
+    public void isPlayerCrossingSellingPenBoundry(Player player) {
+        boolean inPen = false;
+        for (Pen pen : pens) {
+            if (pen.insidePen(player.getPlayer().getLocation())) {
+                if (!player.inPen) {
+                    message(player.getPlayer(), "You're inside " + pen.owner + "'s selling pen");
+                    player.inPen = true;
+                }
+                inPen = true;
+            }
+        }
+        if (player.inPen && !inPen)
+            message(player.player, "You've left the selling pen");
+        player.inPen = (inPen);
+    }
 
-    public void update(final World world) {
+    public void gameloop(final World world) {
         getServer().getScheduler().scheduleSyncRepeatingTask((Plugin) this, new Runnable() {
             public void run() {
-                for (curtis1509.farmerslife.Player player : players) {
-                    player.updateScoreboard(Functions.getTime());
-                    boolean inPen = false;
-                    for (Pen pen : pens) {
-                        if (pen.insidePen(player.getPlayer().getLocation())) {
-                            if (!player.inPen) {
-                                message(player.getPlayer(),"You're inside " + pen.owner + "'s selling pen");
-                                player.inPen = true;
-                            }
-                            inPen = true;
-                        }
-                    }
-                    if (player.inPen && !inPen)
-                        message(player.player, "You've left the selling pen");
-                    player.inPen = (inPen);
-                }
 
                 long time = world.getTime();
-                if (time > 15000 && Bukkit.getOnlinePlayers().
 
-                        size() > 1) {
-                    int total = 0;
-                    boolean noOneInbed = true;
-                    for (org.bukkit.entity.Player player : Bukkit.getOnlinePlayers()) {
-                        if (!player.isSleeping()) {
-                            for (curtis1509.farmerslife.Player p : players) {
-                                if (p.getName().equals(player.getName())) {
-                                    if (p.getSkills().bedperk) {
-                                        if (Functions.withinRangeOfBed(p))
-                                            total++;
-                                    }
-                                }
-                            }
-                        } else {
-                            total++;
-                            noOneInbed = false;
-                        }
-                    }
-                    if (total == Bukkit.getOnlinePlayers().size() && !noOneInbed)
-                        sleep = true;
-
+                //Gameplay events
+                for (curtis1509.farmerslife.Player player : players) {
+                    player.updateScoreboard(Functions.getTime());
+                    isPlayerCrossingSellingPenBoundry(player);
                 }
                 if (weather.equals("Wet") && stormingAllDay)
-                    if (time == 19000 || time == 18000 || time == 17000 || time == 16000 || time == 15000 || time == 14000 || time == 13000 || time == 12000 || time == 11000 || time == 10000 || time == 9000 || time == 8000 || time == 7000 || time == 6000 || time == 5000 || time == 4000 || time == 3000 || time == 2000 || time == 1000) {
-                        Random random = new Random();
-                        if (world.hasStorm())
-                            world.setStorm(random.nextInt(10) > 2);
-                        else
-                            world.setStorm(random.nextInt(5) > 2);
-                    }
-                if (time == 19000) {
-                    for (org.bukkit.entity.Player player : Bukkit.getOnlinePlayers()) {
-                        if (!player.isSleeping()) {
-                            player.sendTitle(net.md_5.bungee.api.ChatColor.BLUE + "It's Getting Late", net.md_5.bungee.api.ChatColor.GRAY + " Zzzzzz...");
-                            message(player,"It's getting late you're going to pass out soon... Hurry back to bed!");
-                        }
-                    }
-                }
-                if (time == 20000 || sleep) {
-                    sleep = false;
-                    for (org.bukkit.entity.Player player : Bukkit.getOnlinePlayers()) {
-                        if (!player.isSleeping()) {
-                            int cash = 0;
-                            boolean passOut = true;
-                            for (curtis1509.farmerslife.Player p : players) {
-                                if (p.getName().equals(player.getName())) {
-                                    cash = (int) Math.floor(p.getCash() * 0.1);
-                                    if (cash > 1000) {
-                                        cash = 1000;
-                                    }
-                                    if (p.getSkills().bedperk) {
-                                        if (Functions.withinRangeOfBed(p))
-                                            passOut = false;
-                                    }
-                                    if (passOut)
-                                        p.removeCash(cash);
-                                }
-                            }
-                            if (passOut) {
-                                Location l = player.getBedSpawnLocation();
-                                if (l != null)
-                                    player.teleport(player.getBedSpawnLocation());
-                                else
-                                    player.teleport(world.getSpawnLocation());
+                    updateWeather(time);
 
-                                message(player,"Oh no! You passed out.");
-                                message(player,"We saw some people rummaging through your pockets, they stole $" + cash);
-                                player.setFoodLevel(3);
-                                Functions.giveCompass(player);
-                            }
-                        }
-                    }
-                    for (OfflinePlayer player : Bukkit.getOfflinePlayers()) {
-                        if (punishLogout.contains(player.getName())) {
-                            int cash = 0;
-                            for (curtis1509.farmerslife.Player p : players) {
-                                if (p.getName().equals(player.getName())) {
-                                    cash = (int) Math.floor(p.getCash() * 0.15);
-                                    if (cash > 2000) {
-                                        cash = 2000;
-                                    }
-                                    p.removeCash(cash);
-                                }
-                            }
-                        }
-                    }
-                    punishLogout.clear();
-                    world.setTime(0);
-                }
-                if (time == 5) {
+                //Time Events
+                if (time > 15000 && Bukkit.getOnlinePlayers().size() > 1)
+                    shouldDayEndEarly = endDayEarly();
+                else if (time == 19000)
+                    broadcastLateMessage();
+                else if (time == 20000 || shouldDayEndEarly)
+                    endDay();
+                else if (time == 5)
+                    newDay();
 
-                    for (String key : animalNames.keySet()) {
-                        animalNames.replace(key, animalNames.get(key) + 1);
-                    }
-
-                    day = world.getGameTime();
-                    try {
-                        fileReader.newDay();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                    Functions.setWeather();
-                    for (org.bukkit.entity.Player player : Bukkit.getOnlinePlayers()) {
-                        if (world.hasStorm()) {
-                            player.sendTitle(net.md_5.bungee.api.ChatColor.GOLD + "Rise and Shine", net.md_5.bungee.api.ChatColor.BLUE + " Rainy Day");
-                        } else {
-                            player.sendTitle(net.md_5.bungee.api.ChatColor.GOLD + "Rise and Shine", ChatColor.BLUE + " Sunny Day");
-                        }
-                    }
-                    for (Entity mob : world.getEntities()) {
-                        try {
-                            if (mob.getCustomName() != null && mob.getType() != EntityType.PLAYER) {
-                                for (Pen pen : pens) {
-                                    if (pen.insidePen(mob.getLocation())) {
-                                        economy.depositPlayer(pen.owner, Functions.calculateAnimalPayout(mob, Functions.getPlayer(pen.owner)));
-                                        Functions.getPlayer(pen.owner).addToTodaysCash(Functions.calculateAnimalPayout(mob, Functions.getPlayer(pen.owner)));
-                                        mob.remove();
-                                    }
-                                }
-                            }
-                        } catch (NullPointerException e) {
-                        }
-                    }
-                    for (DepositBox box : depositBoxes) {
-                        if (box.getDepositBox().getType() == Material.CHEST) {
-                            Chest chest = (Chest) box.getDepositBox().getState();
-                            for (curtis1509.farmerslife.Player player : players) {
-                                if (box.getOwner().equals(player.getName())) {
-
-                                    try {
-                                        player.addCash(Functions.getAmountOfCash(depositCrops, chest.getInventory(), player.getName()) * player.getSkills().skillProfits.getMultiplier());
-                                        fileReader.saveStats(day, player.getName());
-                                    } catch (IOException e) {
-                                        e.printStackTrace();
-                                    }
-                                }
-                                Thread wait = new Thread(() -> {
-                                    try {
-                                        player.getPlayer().playSound(player.getPlayer().getLocation(), Sound.ENTITY_CHICKEN_AMBIENT, 3, 1);
-                                        try {
-                                            Thread.sleep(500);
-                                        } catch (InterruptedException e) {
-                                            e.printStackTrace();
-                                        }
-                                        player.getPlayer().playSound(player.getPlayer().getLocation(), Sound.ENTITY_CHICKEN_DEATH, 3, 1);
-                                    } catch (Exception e) {
-                                        e.printStackTrace();
-                                    }
-                                });
-                                wait.start();
-                            }
-
-                            LinkedList<ItemStack> deliveryItems = new LinkedList<>();
-                            for (ItemStack delivery : chest.getInventory().getContents()) {
-                                if (delivery != null) {
-                                    if (delivery.getItemMeta().getDisplayName().contains("Shop"))
-                                        deliveryItems.add(delivery);
-                                }
-                            }
-
-                            //Milk Bucket Exchange
-                            LinkedList<DepositCrop> milkBuckets = new LinkedList<>();
-                            milkBuckets.add(new DepositCrop(Material.MILK_BUCKET, 0));
-                            milkBuckets.add(new DepositCrop(Material.BUCKET, 0));
-                            int buckets = Functions.getAmountOf(milkBuckets, chest.getInventory());
-                            chest.getInventory().clear();
-                            chest.getInventory().addItem(new ItemStack(Material.BUCKET, buckets));
-
-                            for (ItemStack itemStack : deliveryItems)
-                                chest.getInventory().addItem(itemStack);
-
-                            if (box.isShipmentBox() && Functions.getPlayer(box.getOwner()) != null) {
-                                boolean itemsDelivered = false;
-                                for (ItemStack item : Functions.getPlayer(box.getOwner()).getDeliveryOrder()) {
-                                    itemsDelivered = true;
-                                    chest.getInventory().addItem(item);
-                                }
-                                Functions.getPlayer(box.getOwner()).getDeliveryOrder().clear();
-                                if (itemsDelivered)
-                                    message(Functions.getPlayer(box.getOwner()).getPlayer(),"Your delivery has arrived inside your shipment box");
-                            }
-                        }
-                    }
-
-                    for (curtis1509.farmerslife.Player player : players) {
-                        player.golemIronSoldToday = 0;
-                        if (bestPlayerName.equals("")) {
-                            bestPlayerName = player.getName();
-                            bestCashAmount = player.getTodaysCash();
-                        } else {
-                            if (player.getTodaysCash() > bestCashAmount) {
-                                bestCashAmount = player.getTodaysCash();
-                                bestPlayerName = player.getName();
-                            }
-                        }
-                        message(player.getPlayer(),"You made $" + (int) Math.floor(player.getTodaysCash()) + " yesterday");
-                        player.resetTodaysCash();
-                    }
-
-                    if (!bestPlayerName.equals("") && bestCashAmount > 0)
-                        Functions.broadcast("Well done to " + bestPlayerName + " for making the most money yesterday for a total of $" + (int) Math.floor(bestCashAmount));
-                    bestPlayerName = "";
-                    bestCashAmount = 0;
-                    fileReader.savePlayers();
-                    Functions.reloadShop();
-                }
             }
         }, 1, 1);
+    }
+
+    public void broadcastLateMessage() {
+        for (org.bukkit.entity.Player player : Bukkit.getOnlinePlayers()) {
+            if (!player.isSleeping()) {
+                player.sendTitle(net.md_5.bungee.api.ChatColor.BLUE + "It's Getting Late", net.md_5.bungee.api.ChatColor.GRAY + " Zzzzzz...");
+                message(player, "It's getting late you're going to pass out soon... Hurry back to bed!");
+            }
+        }
+    }
+
+    public boolean endDayEarly() {
+        int total = 0;
+        boolean noOneInbed = true;
+        for (org.bukkit.entity.Player player : Bukkit.getOnlinePlayers()) {
+            if (!player.isSleeping()) {
+                for (curtis1509.farmerslife.Player p : players) {
+                    if (p.getName().equals(player.getName())) {
+                        if (p.getSkills().bedperk) {
+                            if (Functions.withinRangeOfBed(p))
+                                total++;
+                        }
+                    }
+                }
+            } else {
+                total++;
+                noOneInbed = false;
+            }
+        }
+        if (total == Bukkit.getOnlinePlayers().size() && !noOneInbed)
+            return true;
+        return false;
+    }
+
+    public void updateWeather(long time) {
+        if (time == 19000 || time == 18000 || time == 17000 || time == 16000 || time == 15000 || time == 14000 || time == 13000 || time == 12000 || time == 11000 || time == 10000 || time == 9000 || time == 8000 || time == 7000 || time == 6000 || time == 5000 || time == 4000 || time == 3000 || time == 2000 || time == 1000) {
+            Random random = new Random();
+            if (world.hasStorm())
+                world.setStorm(random.nextInt(10) > 2);
+            else
+                world.setStorm(random.nextInt(5) > 2);
+        }
+    }
+
+    public void newDay() {
+        for (String key : animalNames.keySet()) {
+            animalNames.replace(key, animalNames.get(key) + 1);
+        }
+
+        day = world.getGameTime();
+        dayNumber++;
+        if (dayNumber > 40) {
+            dayNumber = 1;
+            Bukkit.broadcastMessage("Attention players, we are now entering a wet weather season. Expect lots of rain and thunder for the next 20 days!");
+        } else if (day == 21) {
+            Bukkit.broadcastMessage("Attention players, we are now entering a dry weather season. Expect lots of sun and nearly no rain for the next 20 days!");
+        }
+        if (day > 20 && day < 40) {
+            weather = "Dry";
+        } else if (day > 0 && day < 20) {
+            weather = "Wet";
+        }
+        Functions.setWeather();
+        for (org.bukkit.entity.Player player : Bukkit.getOnlinePlayers()) {
+            if (world.hasStorm()) {
+                player.sendTitle(net.md_5.bungee.api.ChatColor.GOLD + "Rise and Shine", net.md_5.bungee.api.ChatColor.BLUE + " Rainy Day");
+            } else {
+                player.sendTitle(net.md_5.bungee.api.ChatColor.GOLD + "Rise and Shine", ChatColor.BLUE + " Sunny Day");
+            }
+        }
+        for (Entity mob : world.getEntities()) {
+            try {
+                if (mob.getCustomName() != null && mob.getType() != EntityType.PLAYER) {
+                    for (Pen pen : pens) {
+                        if (pen.insidePen(mob.getLocation())) {
+                            economy.depositPlayer(pen.owner, Functions.calculateAnimalPayout(mob, Functions.getPlayer(pen.owner)));
+                            Functions.getPlayer(pen.owner).addToTodaysCash(Functions.calculateAnimalPayout(mob, Functions.getPlayer(pen.owner)));
+                            mob.remove();
+                        }
+                    }
+                }
+            } catch (NullPointerException e) {
+            }
+        }
+        for (DepositBox box : depositBoxes) {
+            if (box.getDepositBox().getType() == Material.CHEST) {
+                Chest chest = (Chest) box.getDepositBox().getState();
+                for (curtis1509.farmerslife.Player player : players) {
+                    if (box.getOwner().equals(player.getName())) {
+
+                        try {
+                            economy.depositPlayer(player.getPlayer(),Functions.getAmountOfCash(depositCrops, chest.getInventory(), player.getName()) * player.getSkills().skillProfits.getMultiplier());
+                            fileReader.saveStats(day, player.getName());
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    Thread wait = new Thread(() -> {
+                        try {
+                            player.getPlayer().playSound(player.getPlayer().getLocation(), Sound.ENTITY_CHICKEN_AMBIENT, 3, 1);
+                            try {
+                                Thread.sleep(500);
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                            player.getPlayer().playSound(player.getPlayer().getLocation(), Sound.ENTITY_CHICKEN_DEATH, 3, 1);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    });
+                    wait.start();
+                }
+
+                LinkedList<ItemStack> deliveryItems = new LinkedList<>();
+                for (ItemStack delivery : chest.getInventory().getContents()) {
+                    if (delivery != null) {
+                        if (delivery.getItemMeta().getDisplayName().contains("Shop"))
+                            deliveryItems.add(delivery);
+                    }
+                }
+
+                processMilkBuckets(chest);
+
+                for (ItemStack itemStack : deliveryItems)
+                    chest.getInventory().addItem(itemStack);
+
+                if (box.isShipmentBox() && Functions.getPlayer(box.getOwner()) != null) {
+                    boolean itemsDelivered = false;
+                    for (ItemStack item : Functions.getPlayer(box.getOwner()).getDeliveryOrder()) {
+                        itemsDelivered = true;
+                        chest.getInventory().addItem(item);
+                    }
+                    Functions.getPlayer(box.getOwner()).getDeliveryOrder().clear();
+                    if (itemsDelivered)
+                        message(Functions.getPlayer(box.getOwner()).getPlayer(), "Your delivery has arrived inside your shipment box");
+                }
+            }
+        }
+
+        for (curtis1509.farmerslife.Player player : players) {
+            player.golemIronSoldToday = 0;
+            if (bestPlayerName.equals("")) {
+                bestPlayerName = player.getName();
+                bestCashAmount = player.getTodaysCash();
+            } else {
+                if (player.getTodaysCash() > bestCashAmount) {
+                    bestCashAmount = player.getTodaysCash();
+                    bestPlayerName = player.getName();
+                }
+            }
+            message(player.getPlayer(), "You made $" + (int) Math.floor(player.getTodaysCash()) + " yesterday");
+            player.resetTodaysCash();
+        }
+
+        if (!bestPlayerName.equals("") && bestCashAmount > 0)
+            Functions.broadcast("Well done to " + bestPlayerName + " for making the most money yesterday for a total of $" + (int) Math.floor(bestCashAmount));
+        bestPlayerName = "";
+        bestCashAmount = 0;
+        Functions.reloadShop();
+
+
+        fileReader.FileProcessNewDay();
+    }
+
+    //Milk Bucket Exchange. Takes milk buckets in deposit box (chest), processes them, and then returns empty buckets to the deposit box.
+    public void processMilkBuckets(Chest chest) {
+        LinkedList<DepositCrop> milkBuckets = new LinkedList<>();
+        milkBuckets.add(new DepositCrop(Material.MILK_BUCKET, 0));
+        milkBuckets.add(new DepositCrop(Material.BUCKET, 0));
+        int buckets = Functions.getAmountOf(milkBuckets, chest.getInventory());
+        chest.getInventory().clear();
+        chest.getInventory().addItem(new ItemStack(Material.BUCKET, buckets));
+    }
+
+    public void endDay() {
+        shouldDayEndEarly = false; //This is to reset the alternate condition where new day can be started with everyone in bed.
+        for (org.bukkit.entity.Player player : Bukkit.getOnlinePlayers()) {
+            if (!player.isSleeping() && playerShouldPassOut(player))
+                passOut(player);
+        }
+        punishPlayersForLoggingOutAtBedtime();
+        world.setTime(0);
+    }
+
+    public boolean playerShouldPassOut(org.bukkit.entity.Player player) {
+        if (getPlayer(player).getSkills().bedperk) {
+            if (Functions.withinRangeOfBed(getPlayer(player)))
+                return false;
+        }
+        return true;
+    }
+
+    public void passOut(org.bukkit.entity.Player player) {
+        Location location = player.getBedSpawnLocation();
+        if (location != null)
+            player.teleport(player.getBedSpawnLocation());
+        else
+            player.teleport(world.getSpawnLocation());
+
+        int withdrawAmount = (int) Math.floor(economy.getBalance(player) * 0.1);
+        if (withdrawAmount > 1000)
+            withdrawAmount = 1000;
+        economy.withdrawPlayer(player, withdrawAmount);
+
+        message(player, "Oh no! You passed out.");
+        message(player, "We saw some people rummaging through your pockets, they stole $" + withdrawAmount);
+        player.setFoodLevel(3);
+        Functions.giveCompass(player);
+    }
+
+    public void punishPlayersForLoggingOutAtBedtime() {
+        for (OfflinePlayer player : Bukkit.getOfflinePlayers()) {
+            if (punishLogout.contains(player.getName())) {
+                int withdrawAmount = (int) Math.floor(economy.getBalance(player) * 0.15);
+                if (withdrawAmount > 2000)
+                    withdrawAmount = 2000;
+                economy.withdrawPlayer(player, withdrawAmount);
+            }
+        }
+        punishLogout.clear();
     }
 
     @Override

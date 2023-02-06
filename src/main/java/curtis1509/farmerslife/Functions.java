@@ -2,16 +2,15 @@ package curtis1509.farmerslife;
 
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.TextComponent;
-import net.milkbowl.vault.economy.Economy;
-import org.bukkit.*;
-import org.bukkit.block.CreatureSpawner;
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.BlockStateMeta;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 
@@ -29,6 +28,13 @@ public class Functions {
         double payout = animalCost.get(e.getType()) + (animalCost.get(e.getType()) * multiplier);
         payout = payout * player.getSkills().skillProfits.getMultiplier();
         return payout;
+    }
+
+    public static int normalizeDayNumber(){
+        if (dayNumber <= 20)
+            return 20 - dayNumber;
+        else
+            return 40 - dayNumber;
     }
 
     public static boolean isDepositBox(Location location) {
@@ -58,65 +64,9 @@ public class Functions {
         return null;
     }
 
-    //MARKED FOR REWORK
-    public static void loadDepositShop() throws IOException {
-        FileReader fileReader = new FileReader();
-        String dataIn = "";
-        try {
-            dataIn = fileReader.read("plugins/FarmersLife/depositShop.txt");
-        } catch (Exception e) {
-            FileWriter writer = new FileWriter("plugins/FarmersLife/depositShop.txt");
-            writer.write(defaultFiles.defaultDepositShop);
-            writer.close();
-            dataIn = fileReader.read("plugins/FarmersLife/depositShop.txt");
-        }
-        String[] data = dataIn.split(" ");
-        for (int i = 1; i < data.length; i++) {
-            String matName = data[i];
-            Material material = getMaterial(data[i]);
-            i++;
-            double price = Double.parseDouble(data[i]);
-            if (material != null)
-                depositCrops.add(new DepositCrop(material, price));
-            else
-                getLogger().info(matName + " could not be identified");
-        }
-    }
-
-    //MARKED FOR REWORK
-    public static void loadSeedsShop() throws IOException {
-        FileReader fileReader = new FileReader();
-        String dataIn = "";
-        try {
-            dataIn = fileReader.read("plugins/FarmersLife/seedsShop.txt");
-        } catch (Exception e) {
-            FileWriter writer = new FileWriter("plugins/FarmersLife/seedsShop.txt");
-            writer.write(defaultFiles.defaultSeedsShop);
-            writer.close();
-            dataIn = fileReader.read("plugins/FarmersLife/seedsShop.txt");
-        }
-        String[] data = dataIn.split(" ");
-        for (int i = 1; i < data.length; i++) {
-            String matName = data[i];
-            Material material = getMaterial(data[i]);
-            i++;
-            int price = Integer.parseInt(data[i]);
-            i++;
-            int amount = Integer.parseInt(data[i]);
-            if (material != null)
-                addToInventory(seedsInventory, material, price, amount);
-            else
-                getLogger().info(matName + " could not be identified");
-        }
-    }
-
     public static void populateBuyInventory() {
-        try {
-            fileReader.loadBuyShop();
-            loadSeedsShop();
-        } catch (IOException e) {
-            System.out.println("Failed To Load Shops");
-        }
+        fileReader.loadBuyShop();
+        fileReader.loadSeedsShop();
     }
 
     public static void addToInventory(Inventory inventory, Material material, int price, int amount) {
@@ -185,7 +135,7 @@ public class Functions {
         player.getInventory().setItem(8, new ItemStack(Material.COMPASS, 1));
         ItemMeta compassMeta = player.getInventory().getItem(8).getItemMeta();
         compassMeta.setDisplayName("Farmers Compass");
-        compassMeta.setLore(Collections.singletonList("Farmers main menu"));
+        compassMeta.setLore(Collections.singletonList("Farmers Main Menu"));
         player.getInventory().getItem(8).setItemMeta(compassMeta);
         punishLogout.remove(player.getName());
     }
@@ -377,16 +327,10 @@ public class Functions {
         buyInventory2.clear();
         buyItems.clear();
         animalCost.clear();
-        fileReader.loadBuyShop();
-        fileReader.loadAnimalCosts();
         depositCrops.clear();
         seedsInventory.clear();
-        try {
-            loadDepositShop();
-            loadSeedsShop();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+
+        fileReader.FileProcessReloadShop();
     }
 
     public static void broadcast(String message) {

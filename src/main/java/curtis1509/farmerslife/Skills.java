@@ -104,8 +104,8 @@ public class Skills {
     }
 
     public void buyProtection(curtis1509.farmerslife.Player player) {
-        if (player.getCash() >= 42000) {
-            player.removeCash(42000);
+        if (economy.getBalance(player.getPlayer()) >= 42000) {
+            economy.withdrawPlayer(player.getPlayer(),42000);
             protection = true;
             protectArmour(player.getPlayer());
             Bukkit.broadcastMessage("Congratulations to " + player.getPlayer().getName() + " for unlocking the permanent Protection IV");
@@ -113,20 +113,20 @@ public class Skills {
             skillsInventory.setItem(1, createItem(Material.DIAMOND_CHESTPLATE, "Protection IV",
                     "UNLOCKED"));
         } else {
-            player.getPlayer().sendMessage("Sorry, you don't have enough money for Protection IV. You need $" + (42000 - player.getCash()) + " more");
+            player.getPlayer().sendMessage("Sorry, you don't have enough money for Protection IV. You need $" + (42000 - economy.getBalance(player.getPlayer())) + " more");
         }
     }
 
     public void buyBedPerk(curtis1509.farmerslife.Player player) {
-        if (player.getCash() >= 20000) {
-            player.removeCash(20000);
+        if (economy.getBalance(player.getPlayer()) >= 20000) {
+            economy.withdrawPlayer(player.getPlayer(),20000);
             bedperk = true;
             Bukkit.broadcastMessage("Congratulations to " + player.getPlayer().getName() + " for unlocking the bed perk!");
             spawnFireworks(player.getPlayer().getLocation(), 1);
             skillsInventory.setItem(2, createItem(Material.RED_BED, "Bed Perk",
                     "UNLOCKED"));
         } else {
-            player.getPlayer().sendMessage("Sorry, you don't have enough money for Bed Perk. You need $" + (20000 - player.getCash()) + " more");
+            player.getPlayer().sendMessage("Sorry, you don't have enough money for Bed Perk. You need $" + (20000 - economy.getBalance(player.getPlayer())) + " more");
         }
     }
 

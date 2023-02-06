@@ -272,7 +272,7 @@ public class Events extends Functions implements Listener {
         event.getDrops().removeAll(newInventory);
 
         Random random = new Random();
-        Inventory removedInventory = Bukkit.createInventory(null, 9, "Lost and Found : PICK 3 ITEMS");
+        Inventory removedInventory = Bukkit.createInventory(null, 9, "Item Recovery Service : PICK 3 ITEMS $250 ea");
         LinkedList<Integer> values = new LinkedList<>();
         for (int i = 0; i < 9; i++) {
             int x = random.nextInt(54);
@@ -325,7 +325,7 @@ public class Events extends Functions implements Listener {
                 String name = event.getRightClicked().getCustomName();
                 for (String key : animalNames.keySet()) {
                     if (key.equals(name)) {
-                         message(event.getPlayer(),name + " " + animalNames.get(name) + " days " +
+                         message(event.getPlayer(),name + " " + animalNames.get(name) + " days old " +
                                 "$" + (int) Math.floor(calculateAnimalPayout(event.getRightClicked(), getPlayer(event.getPlayer().getName()))));
                     }
                 }
@@ -408,8 +408,8 @@ public class Events extends Functions implements Listener {
                     event.setCancelled(true);
                     for (curtis1509.farmerslife.Player p : players) {
                         if (event.getWhoClicked().getName().equals(p.getPlayer().getName())) {
-                            if (p.getCash() >= 5000) {
-                                p.removeCash(5000);
+                            if (economy.getBalance(p.getPlayer()) >= 5000) {
+                                economy.withdrawPlayer(p.getPlayer(),5000);
                                 p.getPlayer().playSound(p.getPlayer().getLocation(), Sound.BLOCK_ENCHANTMENT_TABLE_USE, 3, 1);
                                 Skills.spawnFireworks(p.getPlayer().getLocation(), 1);
                                 message(event.getWhoClicked(),"You've bought a card pack");
@@ -433,8 +433,8 @@ public class Events extends Functions implements Listener {
                 if (clicked.getType() == Material.SPAWNER) {
                     for (curtis1509.farmerslife.Player p : players) {
                         if (p.getPlayer() == event.getWhoClicked()) {
-                            if (p.getCash() >= 15000) {
-                                p.removeCash(15000);
+                            if (economy.getBalance(p.getPlayer()) >= 15000) {
+                                economy.withdrawPlayer(p.getPlayer(),15000);
                                 p.getPlayer().getInventory().addItem(spawnerInventory.getItem(1));
                             } else
                                 message(p.getPlayer(),"Sorry, you don't have enough money to buy a spawner");
@@ -450,9 +450,9 @@ public class Events extends Functions implements Listener {
                     if (item.getMaterial() == clicked.getType()) {
                         for (curtis1509.farmerslife.Player p : players) {
                             if (p.getPlayer() == event.getWhoClicked() || Objects.equals(p.getName(), event.getWhoClicked().getName())) {
-                                if (p.getCash() >= item.getCost()) {
+                                if (economy.getBalance(p.getPlayer()) >= item.getCost()) {
                                     if (getDeliveryBox(player) != null) {
-                                        p.removeCash(item.getCost());
+                                        economy.withdrawPlayer(p.getPlayer(),item.getCost());
                                         ItemStack addingItem = new ItemStack(item.getMaterial(), item.getAmount());
                                         ItemMeta meta = Objects.requireNonNull(event.getCurrentItem()).getItemMeta();
                                         assert meta != null;
@@ -484,14 +484,19 @@ public class Events extends Functions implements Listener {
                 if (inventory == p.getDeathInventory()) {
                     if (event.getClickedInventory() == p.getDeathInventory()) {
                         if (p.getPlayer() == event.getWhoClicked() && event.getCurrentItem() != null) {
-                            event.setCancelled(true);
-                            event.getWhoClicked().getInventory().addItem(event.getCurrentItem());
-                            inventory.remove(Objects.requireNonNull(event.getCurrentItem()));
-                            p.deathInventoryi--;
-                            if (p.deathInventoryi == 0 || p.getDeathInventory().isEmpty()) {
-                                event.getWhoClicked().closeInventory();
-                                p.clearDeathInventory();
-                                p.deathInventoryi = 3;
+                            if (economy.getBalance(p.getPlayer()) >= 250) {
+                                economy.withdrawPlayer(p.getPlayer(),250);
+                                event.setCancelled(true);
+                                event.getWhoClicked().getInventory().addItem(event.getCurrentItem());
+                                inventory.remove(Objects.requireNonNull(event.getCurrentItem()));
+                                p.deathInventoryi--;
+                                if (p.deathInventoryi == 0 || p.getDeathInventory().isEmpty()) {
+                                    event.getWhoClicked().closeInventory();
+                                    p.clearDeathInventory();
+                                    p.deathInventoryi = 3;
+                                }
+                            }else{
+                                message(p.getPlayer(),"Insufficient Balance. It costs $250 to retrieve an item.");
                             }
                         }
                     }

@@ -92,25 +92,12 @@ public class Player {
         deathInventory = null;
     }
 
-    public void removeCash(double amount) {
-        economy.withdrawPlayer(player, amount);
-        scoreboard.setLines(
-                player, "&a$&6" + economy.getBalance(player)
-        );
-        scoreboard.updateScoreboard();
-    }
-
-    public double getCash() {
-        return economy.getBalance(player);
-    }
-
     public void updateScoreboard(String time) {
         scoreboard.setLines(
-                player, "&6$" + Math.floor(economy.getBalance(player)), time, "Weather Season: &6" + weather, "Days Remaining: &6" + dayNumber
+                player, "&6$" + Math.floor(economy.getBalance(player)), time, "Weather Season: &6" + weather, "Days Remaining: &6" + Functions.normalizeDayNumber()
         );
         scoreboard.updateScoreboard();
     }
-
     public String getName() {
         return player.getName();
     }
@@ -121,14 +108,6 @@ public class Player {
 
     public JPerPlayerMethodBasedScoreboard getScoreboard() {
         return scoreboard;
-    }
-
-    public void addCash(double cash) {
-        economy.depositPlayer(player, cash);
-        scoreboard.setTitle(player, "Farmers HUD");
-        scoreboard.setLines(
-                player, "$" + Math.floor(economy.getBalance(player)));
-        scoreboard.updateScoreboard();
     }
 
 }

@@ -281,6 +281,21 @@ public class Functions {
     }
 
     public static void setWeather() {
+
+        dayNumber++;
+        if (dayNumber > 40) {
+            dayNumber = 1;
+            Bukkit.broadcastMessage("The season is shifting into a wet weather season. Expect lots of rain and thunder for the next 20 days!");
+        } else if (day == 21) {
+            Bukkit.broadcastMessage("The season is shifting into a dry weather season. Expect lots of sun and nearly no rain for the next 20 days!");
+        }
+
+        if (day > 20 && day < 40) {
+            weather = "Dry";
+        } else if (day > 0 && day < 20) {
+            weather = "Wet";
+        }
+
         Random random = new Random();
         int r = random.nextInt(10);
         if (weather.equals("Wet")) {

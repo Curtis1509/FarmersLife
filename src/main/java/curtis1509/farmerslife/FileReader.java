@@ -49,6 +49,7 @@ public class FileReader {
     File weatherFileT = new File("plugins/FarmersLife/weather.yml");
 
     FileConfiguration statsConfig = YamlConfiguration.loadConfiguration(statsFileT);
+    FileConfiguration shopConfig = YamlConfiguration.loadConfiguration(new File("plugins/FarmersLife/shop.yml"));
 
     public void FileProcessNewDay(){
         saveDays();
@@ -61,7 +62,7 @@ public class FileReader {
         loadBuyShop();
         loadAnimalCosts();
         loadDepositShop();
-        loadSeedsShop();
+        loadGeneralStore();
     }
     public void FileProcessEnablePlugin(){
         CreateFile();
@@ -79,68 +80,6 @@ public class FileReader {
     public void throwFileError(IOException exception, String fileName){
         System.out.println("There was an error whilst saving " + fileName);
         exception.printStackTrace();
-    }
-
-    //MARKED FOR REWORK
-    public static void loadDepositShop() {
-        FileReader fileReader = new FileReader();
-        String dataIn = "";
-        try {
-            dataIn = fileReader.read("plugins/FarmersLife/depositShop.txt");
-        } catch (Exception e) {
-            try {
-                FileWriter writer = new FileWriter("plugins/FarmersLife/depositShop.txt");
-                writer.write(defaultFiles.defaultDepositShop);
-                writer.close();
-                dataIn = fileReader.read("plugins/FarmersLife/depositShop.txt");
-            }catch(IOException exception){
-                System.out.println("There was an error reading deposit shop data");
-                exception.printStackTrace();
-            }
-        }
-        String[] data = dataIn.split(" ");
-        for (int i = 1; i < data.length; i++) {
-            String matName = data[i];
-            Material material = getMaterial(data[i]);
-            i++;
-            double price = Double.parseDouble(data[i]);
-            if (material != null)
-                depositCrops.add(new DepositCrop(material, price));
-            else
-                getLogger().info(matName + " could not be identified");
-        }
-    }
-
-    //MARKED FOR REWORK
-    public static void loadSeedsShop() {
-        FileReader fileReader = new FileReader();
-        String dataIn = "";
-        try {
-            dataIn = fileReader.read("plugins/FarmersLife/seedsShop.txt");
-        } catch (Exception e) {
-            try {
-                FileWriter writer = new FileWriter("plugins/FarmersLife/seedsShop.txt");
-                writer.write(defaultFiles.defaultSeedsShop);
-                writer.close();
-                dataIn = fileReader.read("plugins/FarmersLife/seedsShop.txt");
-            }catch(IOException exception){
-                System.out.println("There was an error loading the seeds shop");
-                exception.printStackTrace();
-            }
-        }
-        String[] data = dataIn.split(" ");
-        for (int i = 1; i < data.length; i++) {
-            String matName = data[i];
-            Material material = getMaterial(data[i]);
-            i++;
-            int price = Integer.parseInt(data[i]);
-            i++;
-            int amount = Integer.parseInt(data[i]);
-            if (material != null)
-                addToInventory(seedsInventory, material, price, amount);
-            else
-                getLogger().info(matName + " could not be identified");
-        }
     }
 
     public void saveDays(){
@@ -424,6 +363,7 @@ public class FileReader {
         return perk;
     }
 
+    //MARKED FOR REWORK : Should loop keys and perform similar call to method created for loadShop functions: getMaterial(String) then if non-null result returned cost should be applied to it and then stored.
     public void loadAnimalCosts() {
         FileConfiguration costConfig = YamlConfiguration.loadConfiguration(new File("plugins/FarmersLife/animalCosts.yml"));
         Set<String> items = Objects.requireNonNull(costConfig.getConfigurationSection("animals")).getKeys(false);
@@ -515,8 +455,36 @@ public class FileReader {
             animalCost.put(EntityType.SQUID, costConfig.getDouble("animals.squid.cost"));
         }
     }
+
+    //Load Deposit Shop
+    public void loadDepositShop(){
+        ConfigurationSection section = shopConfig.getConfigurationSection("depositableitems");
+        Set<String> childSections = section.getKeys(false);
+
+        for (String child : childSections) {
+            Material material = getMaterial(child);
+            if (material != null)
+                depositCrops.add(new DepositCrop(material, shopConfig.getInt("depositableitems." + child + "cost")));
+            else
+                getLogger().info(child + " could not be identified when loading the depositableitems section in shop.yml");
+        }
+    }
+
+    //Load General Store
+    public void loadGeneralStore(){
+        ConfigurationSection section = shopConfig.getConfigurationSection("generalitems");
+        Set<String> childSections = section.getKeys(false);
+
+        for (String child : childSections) {
+            Material material = getMaterial(child);
+            if (material != null)
+                addToInventory(seedsInventory, material, shopConfig.getInt("generalitems." + child + "cost"), shopConfig.getInt("generalitems." + child + "amount"));
+            else
+                getLogger().info(child + " could not be identified");
+        }
+    }
+
     public void loadBuyShop(){
-        FileConfiguration shopConfig = YamlConfiguration.loadConfiguration(new File("plugins/FarmersLife/shop.yml"));
         int itemSlots = shopConfig.getInt("slots");
         Set<String> items = Objects.requireNonNull(shopConfig.getConfigurationSection("items")).getKeys(false);
         double defaultShopChance = shopConfig.getDouble("shopchance");

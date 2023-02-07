@@ -102,22 +102,6 @@ public class FarmersLife extends JavaPlugin implements CommandExecutor {
         return economy != null;
     }
 
-    public void isPlayerCrossingSellingPenBoundry(Player player) {
-        boolean inPen = false;
-        for (Pen pen : pens) {
-            if (pen.insidePen(player.getPlayer().getLocation())) {
-                if (!player.inPen) {
-                    message(player.getPlayer(), "You're inside " + pen.owner + "'s selling pen");
-                    player.inPen = true;
-                }
-                inPen = true;
-            }
-        }
-        if (player.inPen && !inPen)
-            message(player.player, "You've left the selling pen");
-        player.inPen = (inPen);
-    }
-
     public void gameloop(final World world) {
         getServer().getScheduler().scheduleSyncRepeatingTask((Plugin) this, new Runnable() {
             public void run() {
@@ -146,10 +130,26 @@ public class FarmersLife extends JavaPlugin implements CommandExecutor {
         }, 1, 1);
     }
 
+    public void isPlayerCrossingSellingPenBoundry(Player player) {
+        boolean inPen = false;
+        for (Pen pen : pens) {
+            if (pen.insidePen(player.getPlayer().getLocation())) {
+                if (!player.inPen) {
+                    message(player.getPlayer(), "You're inside " + pen.owner + "'s selling pen");
+                    player.inPen = true;
+                }
+                inPen = true;
+            }
+        }
+        if (player.inPen && !inPen)
+            message(player.player, "You've left the selling pen");
+        player.inPen = (inPen);
+    }
+
     public void broadcastLateMessage() {
         for (org.bukkit.entity.Player player : Bukkit.getOnlinePlayers()) {
             if (!player.isSleeping()) {
-                player.sendTitle(net.md_5.bungee.api.ChatColor.BLUE + "It's Getting Late", net.md_5.bungee.api.ChatColor.GRAY + " Zzzzzz...");
+                sendTitle(player, "It's Getting Late", "Zzzzzzz....");
                 message(player, "It's getting late you're going to pass out soon... Hurry back to bed!");
             }
         }
@@ -188,46 +188,21 @@ public class FarmersLife extends JavaPlugin implements CommandExecutor {
         }
     }
 
-    public void newDay() {
-        for (String key : animalNames.keySet()) {
-            animalNames.replace(key, animalNames.get(key) + 1);
-        }
-
-        day = world.getGameTime();
-        dayNumber++;
-        if (dayNumber > 40) {
-            dayNumber = 1;
-            Bukkit.broadcastMessage("Attention players, we are now entering a wet weather season. Expect lots of rain and thunder for the next 20 days!");
-        } else if (day == 21) {
-            Bukkit.broadcastMessage("Attention players, we are now entering a dry weather season. Expect lots of sun and nearly no rain for the next 20 days!");
-        }
-        if (day > 20 && day < 40) {
-            weather = "Dry";
-        } else if (day > 0 && day < 20) {
-            weather = "Wet";
-        }
-        Functions.setWeather();
-        for (org.bukkit.entity.Player player : Bukkit.getOnlinePlayers()) {
-            if (world.hasStorm()) {
-                player.sendTitle(net.md_5.bungee.api.ChatColor.GOLD + "Rise and Shine", net.md_5.bungee.api.ChatColor.BLUE + " Rainy Day");
-            } else {
-                player.sendTitle(net.md_5.bungee.api.ChatColor.GOLD + "Rise and Shine", ChatColor.BLUE + " Sunny Day");
-            }
-        }
+    public void processSellingPens() {
         for (Entity mob : world.getEntities()) {
-            try {
-                if (mob.getCustomName() != null && mob.getType() != EntityType.PLAYER) {
-                    for (Pen pen : pens) {
-                        if (pen.insidePen(mob.getLocation())) {
-                            economy.depositPlayer(pen.owner, Functions.calculateAnimalPayout(mob, Functions.getPlayer(pen.owner)));
-                            Functions.getPlayer(pen.owner).addToTodaysCash(Functions.calculateAnimalPayout(mob, Functions.getPlayer(pen.owner)));
-                            mob.remove();
-                        }
+            if (mob.getCustomName() != null && mob.getType() != EntityType.PLAYER) {
+                for (Pen pen : pens) {
+                    if (pen.insidePen(mob.getLocation())) {
+                        economy.depositPlayer(pen.owner, Functions.calculateAnimalPayout(mob, Functions.getPlayer(pen.owner)));
+                        Functions.getPlayer(pen.owner).addToTodaysCash(Functions.calculateAnimalPayout(mob, Functions.getPlayer(pen.owner)));
+                        mob.remove();
                     }
                 }
-            } catch (NullPointerException e) {
             }
         }
+    }
+
+    public void processDepositBoxes() {
         for (DepositBox box : depositBoxes) {
             if (box.getDepositBox().getType() == Material.CHEST) {
                 Chest chest = (Chest) box.getDepositBox().getState();
@@ -235,7 +210,7 @@ public class FarmersLife extends JavaPlugin implements CommandExecutor {
                     if (box.getOwner().equals(player.getName())) {
 
                         try {
-                            economy.depositPlayer(player.getPlayer(),Functions.getAmountOfCash(depositCrops, chest.getInventory(), player.getName()) * player.getSkills().skillProfits.getMultiplier());
+                            economy.depositPlayer(player.getPlayer(), Functions.getAmountOfCash(depositCrops, chest.getInventory(), player.getName()) * player.getSkills().skillProfits.getMultiplier());
                             fileReader.saveStats(day, player.getName());
                         } catch (IOException e) {
                             e.printStackTrace();
@@ -282,6 +257,9 @@ public class FarmersLife extends JavaPlugin implements CommandExecutor {
                 }
             }
         }
+    }
+
+    public void announceMostProfitableFarmer() {
 
         for (curtis1509.farmerslife.Player player : players) {
             player.golemIronSoldToday = 0;
@@ -302,10 +280,42 @@ public class FarmersLife extends JavaPlugin implements CommandExecutor {
             Functions.broadcast("Well done to " + bestPlayerName + " for making the most money yesterday for a total of $" + (int) Math.floor(bestCashAmount));
         bestPlayerName = "";
         bestCashAmount = 0;
+    }
+
+    public void broadcastTitle(String upper, String lower) {
+        for (org.bukkit.entity.Player player : Bukkit.getOnlinePlayers()) {
+            if (world.hasStorm()) {
+                player.sendTitle(net.md_5.bungee.api.ChatColor.GOLD + upper, net.md_5.bungee.api.ChatColor.BLUE + lower);
+            } else {
+                player.sendTitle(net.md_5.bungee.api.ChatColor.GOLD + upper, ChatColor.BLUE + lower);
+            }
+        }
+    }
+
+    public void sendTitle(org.bukkit.entity.Player player, String upper, String lower) {
+        player.sendTitle(net.md_5.bungee.api.ChatColor.GOLD + upper, net.md_5.bungee.api.ChatColor.BLUE + lower);
+    }
+
+
+    public void newDay() {
+
+        for (String key : animalNames.keySet()) {
+            animalNames.replace(key, animalNames.get(key) + 1);
+        }
+
+        //Set the weather and announce the new day and weather
+        Functions.setWeather();
+        if (world.hasStorm())
+            broadcastTitle("Rise and Shine", "Rainy Day");
+        else
+            broadcastTitle("Rise and Shine", "Sunny Day");
+
+        processSellingPens();
+        processDepositBoxes();
+        announceMostProfitableFarmer();
         Functions.reloadShop();
-
-
         fileReader.FileProcessNewDay();
+
     }
 
     //Milk Bucket Exchange. Takes milk buckets in deposit box (chest), processes them, and then returns empty buckets to the deposit box.
@@ -438,5 +448,4 @@ public class FarmersLife extends JavaPlugin implements CommandExecutor {
         }
         return false;
     }
-
 }

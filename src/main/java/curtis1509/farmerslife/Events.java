@@ -391,7 +391,7 @@ public class Events extends Functions implements Listener {
                 assert clicked != null;
                 if (clicked.getType() == Material.WHEAT_SEEDS) {
                     event.setCancelled(true);
-                    event.getWhoClicked().openInventory(seedsInventory);
+                    event.getWhoClicked().openInventory(generalInventory);
                 } else if (clicked.getType() == Material.EXPERIENCE_BOTTLE) {
                     event.setCancelled(true);
                     for (curtis1509.farmerslife.Player p : players) {
@@ -444,7 +444,7 @@ public class Events extends Functions implements Listener {
                 }
             }
 
-            if ((inventory == buyInventory || inventory == buyInventory2 || inventory == seedsInventory) && (event.getClickedInventory() == buyInventory2 || event.getClickedInventory() == buyInventory || event.getClickedInventory() == seedsInventory)) {
+            if ((inventory == buyInventory || inventory == buyInventory2 || inventory == generalInventory) && (event.getClickedInventory() == buyInventory2 || event.getClickedInventory() == buyInventory || event.getClickedInventory() == generalInventory)) {
                 for (BuyItem item : buyItems) {
                     assert clicked != null;
                     if (item.getMaterial() == clicked.getType()) {

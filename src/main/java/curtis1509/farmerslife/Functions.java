@@ -9,6 +9,8 @@ import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityCategory;
+import org.bukkit.entity.EntityType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
@@ -24,10 +26,12 @@ import static org.bukkit.Bukkit.getLogger;
 public class Functions {
 
     public static double calculateAnimalPayout(Entity e, curtis1509.farmerslife.Player player) {
-        double multiplier = animalNames.get(e.getCustomName()) * 0.15;
-        double payout = animalCost.get(e.getType()) + (animalCost.get(e.getType()) * multiplier);
-        payout = payout * player.getSkills().skillProfits.getMultiplier();
-        return payout;
+
+            double multiplier = animalNames.get(e.getCustomName()) * 0.15;
+            double payout = animalCost.get(e.getType()) + (animalCost.get(e.getType()) * multiplier);
+            payout = payout * player.getSkills().skillProfits.getMultiplier();
+            return payout;
+
     }
 
     public static int normalizeDayNumber(){
@@ -64,9 +68,18 @@ public class Functions {
         return null;
     }
 
+    public static EntityType getEntity(String string) {
+        for (EntityType entity : EntityType.values()) {
+            if (entity.name().equals(string)) {
+                return entity;
+            }
+        }
+        return null;
+    }
+
     public static void populateBuyInventory() {
         fileReader.loadBuyShop();
-        fileReader.loadSeedsShop();
+        fileReader.loadGeneralStore();
     }
 
     public static void addToInventory(Inventory inventory, Material material, int price, int amount) {
@@ -343,7 +356,7 @@ public class Functions {
         buyItems.clear();
         animalCost.clear();
         depositCrops.clear();
-        seedsInventory.clear();
+        generalInventory.clear();
 
         fileReader.FileProcessReloadShop();
     }

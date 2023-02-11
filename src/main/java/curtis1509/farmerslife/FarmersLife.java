@@ -32,7 +32,7 @@ public class FarmersLife extends JavaPlugin implements CommandExecutor {
     public static HashMap<EntityType, Double> animalCost = new HashMap<>();
     public static Inventory menuInventory = Bukkit.createInventory(null, 9, "Farmers Life Menu");
     public static Inventory spawnerInventory = Bukkit.createInventory(null, 9, "Buy Spawners Inventory");
-    public static Inventory seedsInventory = Bukkit.createInventory(null, 18, "Seeds");
+    public static Inventory generalInventory = Bukkit.createInventory(null, 18, "Sally's General Store");
     public static Inventory buyInventory = Bukkit.createInventory(null, 9, "Buy");
     public static Inventory buyInventory2 = Bukkit.createInventory(null, 54, "Buy");
     public static LinkedList<DepositCrop> depositCrops = new LinkedList<>();
@@ -67,7 +67,7 @@ public class FarmersLife extends JavaPlugin implements CommandExecutor {
 
         fileReader.FileProcessEnablePlugin();
 
-        Functions.addToInventory(menuInventory, Material.WHEAT_SEEDS, "Seeds Shop", "", 0);
+        Functions.addToInventory(menuInventory, Material.WHEAT_SEEDS, "Sally's General Store", "", 0);
         Functions.addToInventory(menuInventory, Material.EXPERIENCE_BOTTLE, "Skills Shop", "", 1);
         Functions.addToInventory(menuInventory, Material.GOLD_INGOT, "Items Shop", "", 2);
         Functions.addToInventory(menuInventory, Material.OAK_FENCE, "Set Selling Pen", "Sell of yer' cattle from an ol' rusty pen", 7);
@@ -81,7 +81,6 @@ public class FarmersLife extends JavaPlugin implements CommandExecutor {
         }
         Functions.populateBuyInventory();
         Functions.setWeather();
-        fileReader.loadAnimalCosts();
         Functions.initAllPlayers();
     }
 

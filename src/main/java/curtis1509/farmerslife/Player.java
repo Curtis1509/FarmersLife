@@ -5,6 +5,7 @@ import dev.jcsoftware.jscoreboards.JScoreboardTeam;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
+import java.text.DecimalFormat;
 import java.util.LinkedList;
 
 import static curtis1509.farmerslife.FarmersLife.*;
@@ -38,10 +39,11 @@ public class Player {
         scoreboard.updateScoreboard();
     }
 
-    public LinkedList<ItemStack> getDeliveryOrder(){
+    public LinkedList<ItemStack> getDeliveryOrder() {
         return deliveryOrder;
     }
-    public void addDelivery(ItemStack itemStack){
+
+    public void addDelivery(ItemStack itemStack) {
         deliveryOrder.add(itemStack);
     }
 
@@ -93,11 +95,17 @@ public class Player {
     }
 
     public void updateScoreboard(String time) {
+
+        DecimalFormat df = new DecimalFormat("#.##");
+        df.setGroupingUsed(true);
+        df.setGroupingSize(3);
+
         scoreboard.setLines(
-                player, "&6$" + Math.floor(economy.getBalance(player)), time, "Weather Season: &6" + weather, "Days Remaining: &6" + Functions.normalizeDayNumber()
+                player, "&6$" + df.format(Math.floor(economy.getBalance(player))), time, "Weather Season: &6" + weather, "Days Remaining: &6" + Functions.normalizeDayNumber()
         );
         scoreboard.updateScoreboard();
     }
+
     public String getName() {
         return player.getName();
     }

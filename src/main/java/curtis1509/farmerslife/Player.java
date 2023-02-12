@@ -39,6 +39,13 @@ public class Player {
         scoreboard.updateScoreboard();
     }
 
+    public void refreshPlayer(){
+        setPlayer(player);
+        reloadScoreboard();
+        scoreboard.updateScoreboard();
+        reloadPlayerName();
+    }
+
     public LinkedList<ItemStack> getDeliveryOrder() {
         return deliveryOrder;
     }

@@ -9,19 +9,16 @@ import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityCategory;
 import org.bukkit.entity.EntityType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
 
 import static curtis1509.farmerslife.FarmersLife.*;
-import static org.bukkit.Bukkit.getLogger;
 
 public class Functions {
 
@@ -32,13 +29,6 @@ public class Functions {
             payout = payout * player.getSkills().skillProfits.getMultiplier();
             return payout;
 
-    }
-
-    public static int normalizeDayNumber(){
-        if (dayNumber <= 20)
-            return 20 - dayNumber;
-        else
-            return 40 - dayNumber;
     }
 
     public static boolean isDepositBox(Location location) {
@@ -116,14 +106,6 @@ public class Functions {
         inventory.setItem(index, item);
     }
 
-    public static void giveCompass(org.bukkit.entity.Player player) {
-        player.getInventory().setItem(8, new ItemStack(Material.COMPASS, 1));
-        ItemMeta compassMeta = player.getInventory().getItem(8).getItemMeta();
-        compassMeta.setDisplayName("Farmers Compass");
-        compassMeta.setLore(Collections.singletonList("Access the Farmers Main Menu"));
-        player.getInventory().getItem(8).setItemMeta(compassMeta);
-    }
-
     public static void initAllPlayers() {
         for (org.bukkit.entity.Player player : Bukkit.getOnlinePlayers()) {
             initPlayer(player);
@@ -131,26 +113,24 @@ public class Functions {
     }
 
     public static void initPlayer(org.bukkit.entity.Player player) {
-        boolean playerExists = false;
-        for (curtis1509.farmerslife.Player fPlayer : players) {
-            if (fPlayer.getPlayer().getName().equals(player.getName())) {
-                playerExists = true;
-                fPlayer.setPlayer(player);
-                fPlayer.reloadScoreboard();
-                fPlayer.scoreboard.updateScoreboard();
-                fPlayer.reloadPlayerName();
-            }
-        }
-        player.sendTitle(ChatColor.GOLD + "Farmers Life", ChatColor.BLUE + weather + " Season");
-        if (!playerExists)
-            players.add(new curtis1509.farmerslife.Player(player, fileReader.loadPlayerSkillProfits(player.getName()), fileReader.loadPerk(player.getName(), "protection"), fileReader.loadPerk(player.getName(), "bedperk"), fileReader.loadPerk(player.getName(), "teleport")));
 
+        if (getPlayer(player.getName()) != null){
+            getPlayer(player.getName()).refreshPlayer();
+        }else{
+            players.add(fileReader.loadPlayer(player));
+        }
+
+        player.sendTitle(ChatColor.GOLD + "Farmers Life", ChatColor.BLUE + weather + " Season");
+        giveFarmersCompass(player);
+        punishLogout.remove(player.getName());
+    }
+
+    public static void giveFarmersCompass(org.bukkit.entity.Player player){
         player.getInventory().setItem(8, new ItemStack(Material.COMPASS, 1));
         ItemMeta compassMeta = player.getInventory().getItem(8).getItemMeta();
         compassMeta.setDisplayName("Farmers Compass");
         compassMeta.setLore(Collections.singletonList("Farmers Main Menu"));
         player.getInventory().getItem(8).setItemMeta(compassMeta);
-        punishLogout.remove(player.getName());
     }
 
     public static LinkedList<DepositBox> getDepositBoxes(org.bukkit.entity.Player player) {
@@ -295,18 +275,14 @@ public class Functions {
 
     public static void setWeather() {
 
-        dayNumber++;
-        if (dayNumber > 40) {
-            dayNumber = 1;
+        day++;
+        if (day > 30 && season.equals("Dry")) {
+            day = 1;
+            season = "Wet";
             Bukkit.broadcastMessage("The season is shifting into a wet weather season. Expect lots of rain and thunder for the next 20 days!");
-        } else if (day == 21) {
+        } else if (day > 30 && season.equals("Wet")) {
             Bukkit.broadcastMessage("The season is shifting into a dry weather season. Expect lots of sun and nearly no rain for the next 20 days!");
-        }
-
-        if (day > 20 && day < 40) {
-            weather = "Dry";
-        } else if (day > 0 && day < 20) {
-            weather = "Wet";
+            season = "Dry";
         }
 
         Random random = new Random();
@@ -317,6 +293,11 @@ public class Functions {
         } else {
             world.setStorm(r > 8);
         }
+
+        if (world.hasStorm())
+            FarmersLife.broadcastTitle("Rise and Shine", "Rainy Day");
+        else
+            FarmersLife.broadcastTitle("Rise and Shine", "Sunny Day");
     }
 
     public static boolean withinRangeOfBed(curtis1509.farmerslife.Player player) {

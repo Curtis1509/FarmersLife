@@ -45,8 +45,8 @@ public class FarmersLife extends JavaPlugin implements CommandExecutor {
     public static LinkedList<Location> shopBlockLocations = new LinkedList<>();
     public static String weather = "Wet";
     public static String bestPlayerName = "";
-    public static long day;
-    public static int dayNumber;
+    public static int day;
+    public static String season;
     public static World world;
     public static FileReader fileReader = new FileReader();
     public static boolean shouldDayEndEarly = false;
@@ -57,28 +57,13 @@ public class FarmersLife extends JavaPlugin implements CommandExecutor {
 
     @Override
     public void onEnable() {
-
         getServer().getPluginManager().registerEvents(new Events(), this);
         world = getServer().getWorld("world");
         gameloop(this.getServer().getWorld("world"));
 
         setupEconomy();
-        getLogger().info("Farmers Life has been enabled!");
-
         fileReader.FileProcessEnablePlugin();
-
-        Functions.addToInventory(menuInventory, Material.WHEAT_SEEDS, "Sally's General Store", "", 0);
-        Functions.addToInventory(menuInventory, Material.EXPERIENCE_BOTTLE, "Skills Shop", "", 1);
-        Functions.addToInventory(menuInventory, Material.GOLD_INGOT, "Items Shop", "", 2);
-        Functions.addToInventory(menuInventory, Material.OAK_FENCE, "Set Selling Pen", "Sell of yer' cattle from an ol' rusty pen", 7);
-        Functions.addToInventory(menuInventory, Material.ENCHANTED_BOOK, "Card Pack $5000", "5 Randomly Enchanted Books", 5);
-        Functions.addToInventory(menuInventory, Material.CHEST, "Set Deposit Box", "Set your deposit box then throw your harvests in and wait until morning", 8);
-
-        try {
-            fileReader.getWeather();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        populateFarmersCompass();
         Functions.populateBuyInventory();
         Functions.setWeather();
         Functions.initAllPlayers();
@@ -101,6 +86,16 @@ public class FarmersLife extends JavaPlugin implements CommandExecutor {
         return economy != null;
     }
 
+    public void populateFarmersCompass(){
+        Functions.addToInventory(menuInventory, Material.WHEAT_SEEDS, "Sally's General Store", "", 0);
+        Functions.addToInventory(menuInventory, Material.EXPERIENCE_BOTTLE, "Skills Shop", "", 1);
+        Functions.addToInventory(menuInventory, Material.GOLD_INGOT, "Items Shop", "", 2);
+        Functions.addToInventory(menuInventory, Material.OAK_FENCE, "Set Selling Pen", "Sell of yer' cattle from an ol' rusty pen", 7);
+        Functions.addToInventory(menuInventory, Material.ENCHANTED_BOOK, "Card Pack $5000", "5 Randomly Enchanted Books", 5);
+        Functions.addToInventory(menuInventory, Material.CHEST, "Set Deposit Box", "Set your deposit box then throw your harvests in and wait until morning", 8);
+
+    }
+
     public void gameloop(final World world) {
         getServer().getScheduler().scheduleSyncRepeatingTask((Plugin) this, new Runnable() {
             public void run() {
@@ -112,8 +107,8 @@ public class FarmersLife extends JavaPlugin implements CommandExecutor {
                     player.updateScoreboard(Functions.getTime());
                     isPlayerCrossingSellingPenBoundry(player);
                 }
-                if (weather.equals("Wet") && stormingAllDay)
-                    updateWeather(time);
+
+                updateWeather(time);
 
                 //Time Events
                 if (time > 15000 && Bukkit.getOnlinePlayers().size() > 1)
@@ -178,12 +173,14 @@ public class FarmersLife extends JavaPlugin implements CommandExecutor {
     }
 
     public void updateWeather(long time) {
-        if (time == 19000 || time == 18000 || time == 17000 || time == 16000 || time == 15000 || time == 14000 || time == 13000 || time == 12000 || time == 11000 || time == 10000 || time == 9000 || time == 8000 || time == 7000 || time == 6000 || time == 5000 || time == 4000 || time == 3000 || time == 2000 || time == 1000) {
-            Random random = new Random();
-            if (world.hasStorm())
-                world.setStorm(random.nextInt(10) > 2);
-            else
-                world.setStorm(random.nextInt(5) > 2);
+        if (weather.equals("Wet") && stormingAllDay) {
+            if (time == 19000 || time == 18000 || time == 17000 || time == 16000 || time == 15000 || time == 14000 || time == 13000 || time == 12000 || time == 11000 || time == 10000 || time == 9000 || time == 8000 || time == 7000 || time == 6000 || time == 5000 || time == 4000 || time == 3000 || time == 2000 || time == 1000) {
+                Random random = new Random();
+                if (world.hasStorm())
+                    world.setStorm(random.nextInt(10) > 2);
+                else
+                    world.setStorm(random.nextInt(5) > 2);
+            }
         }
     }
 
@@ -281,7 +278,7 @@ public class FarmersLife extends JavaPlugin implements CommandExecutor {
         bestCashAmount = 0;
     }
 
-    public void broadcastTitle(String upper, String lower) {
+    public static void broadcastTitle(String upper, String lower) {
         for (org.bukkit.entity.Player player : Bukkit.getOnlinePlayers()) {
             if (world.hasStorm()) {
                 player.sendTitle(net.md_5.bungee.api.ChatColor.GOLD + upper, net.md_5.bungee.api.ChatColor.BLUE + lower);
@@ -304,10 +301,6 @@ public class FarmersLife extends JavaPlugin implements CommandExecutor {
 
         //Set the weather and announce the new day and weather
         Functions.setWeather();
-        if (world.hasStorm())
-            broadcastTitle("Rise and Shine", "Rainy Day");
-        else
-            broadcastTitle("Rise and Shine", "Sunny Day");
 
         processSellingPens();
         processDepositBoxes();
@@ -335,6 +328,7 @@ public class FarmersLife extends JavaPlugin implements CommandExecutor {
         }
         punishPlayersForLoggingOutAtBedtime();
         world.setTime(0);
+
     }
 
     public boolean playerShouldPassOut(org.bukkit.entity.Player player) {
@@ -360,7 +354,6 @@ public class FarmersLife extends JavaPlugin implements CommandExecutor {
         message(player, "Oh no! You passed out.");
         message(player, "We saw some people rummaging through your pockets, they stole $" + withdrawAmount);
         player.setFoodLevel(3);
-        Functions.giveCompass(player);
     }
 
     public void punishPlayersForLoggingOutAtBedtime() {

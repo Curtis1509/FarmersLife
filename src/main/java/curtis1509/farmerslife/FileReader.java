@@ -39,7 +39,7 @@ public class FileReader {
     FileConfiguration depositConfig = YamlConfiguration.loadConfiguration(depositsFile);
 
     public void FileProcessNewDay(){
-        saveDays();
+        saveWeather();
         savePlayers();
         saveDeposits();
         savePens();
@@ -59,6 +59,7 @@ public class FileReader {
         loadPens();
         loadNametags();
         loadAnimalCosts();
+        loadWeather();
     }
     public void FileProcessDisablePlugin(){
         savePlayers();
@@ -68,17 +69,7 @@ public class FileReader {
 
     public void throwFileError(IOException exception, String fileName){
         System.out.println("There was an error whilst saving " + fileName);
-        getLogger().info(exception.getMessage());
-    }
-
-    public void saveDays(){
-        try {
-            weatherConfig.set("day.count", dayNumber);
-            weatherConfig.save(weatherFile);
-        }
-        catch(IOException exception){
-            throwFileError(exception,"weather");
-        }
+        getLogger().info(exception.toString());
     }
 
     //MARKED FOR REWORK
@@ -122,27 +113,19 @@ public class FileReader {
             stats.put(material, stat);
     }
 
-    public void getWeather() throws IOException {
-        int day = weatherConfig.getInt("day.count");
-        if (day == 0) {
-            day = 1;
-            weatherConfig.set("day.count", 1);
+    public void loadWeather() {
+        FarmersLife.day = weatherConfig.getInt("season.day");
+        FarmersLife.season = weatherConfig.getString("season.name");
+    }
+
+    public void saveWeather() {
+        try {
+            weatherConfig.set("season.day", FarmersLife.day);
+            weatherConfig.set("season.name", FarmersLife.season);
             weatherConfig.save(weatherFile);
-            weather = "Wet";
+        } catch(IOException exception){
+          throwFileError(exception,"weather.yml");
         }
-        if (day > 20 && day < 40) {
-            weather = "Dry";
-        } else if (day > 0 && day < 20) {
-            weather = "Wet";
-        } else if (day > 40) {
-            weather = "Wet";
-            weatherConfig.set("day.count", 1);
-            weatherConfig.save(weatherFile);
-        }
-        if (day <= 20)
-            dayNumber = 20 - day;
-        else
-            dayNumber = 40 - day;
     }
 
     public void saveStats(long day, String playerName) throws IOException {
@@ -260,6 +243,14 @@ public class FileReader {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public Player loadPlayer(org.bukkit.entity.Player player){
+        return new curtis1509.farmerslife.Player(player,
+                fileReader.loadPlayerSkillProfits(player.getName()),
+                fileReader.loadPerk(player.getName(), "protection"),
+                fileReader.loadPerk(player.getName(), "bedperk"),
+                fileReader.loadPerk(player.getName(), "teleport"));
     }
 
     public void loadDeposits() {

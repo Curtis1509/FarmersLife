@@ -43,10 +43,10 @@ public class FarmersLife extends JavaPlugin implements CommandExecutor {
     public static LinkedList<DepositBox> depositBoxes = new LinkedList<>();
     public static LinkedList<Pen> pens = new LinkedList<>();
     public static LinkedList<Location> shopBlockLocations = new LinkedList<>();
-    public static String weather = "Wet";
     public static String bestPlayerName = "";
     public static int day;
     public static String season;
+    public static int seasonLength;
     public static World world;
     public static FileReader fileReader = new FileReader();
     public static boolean shouldDayEndEarly = false;
@@ -173,7 +173,7 @@ public class FarmersLife extends JavaPlugin implements CommandExecutor {
     }
 
     public void updateWeather(long time) {
-        if (weather.equals("Wet") && stormingAllDay) {
+        if (season.equals("Wet") && stormingAllDay) {
             if (time == 19000 || time == 18000 || time == 17000 || time == 16000 || time == 15000 || time == 14000 || time == 13000 || time == 12000 || time == 11000 || time == 10000 || time == 9000 || time == 8000 || time == 7000 || time == 6000 || time == 5000 || time == 4000 || time == 3000 || time == 2000 || time == 1000) {
                 Random random = new Random();
                 if (world.hasStorm())

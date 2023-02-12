@@ -116,6 +116,7 @@ public class FileReader {
     public void loadWeather() {
         FarmersLife.day = weatherConfig.getInt("season.day");
         FarmersLife.season = weatherConfig.getString("season.name");
+        FarmersLife.seasonLength = weatherConfig.getInt("season.length");
     }
 
     public void saveWeather() {

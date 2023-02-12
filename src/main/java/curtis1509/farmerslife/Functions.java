@@ -120,7 +120,7 @@ public class Functions {
             players.add(fileReader.loadPlayer(player));
         }
 
-        player.sendTitle(ChatColor.GOLD + "Farmers Life", ChatColor.BLUE + weather + " Season");
+        player.sendTitle(ChatColor.GOLD + "Farmers Life", ChatColor.BLUE + season + " Season");
         giveFarmersCompass(player);
         punishLogout.remove(player.getName());
     }
@@ -276,18 +276,18 @@ public class Functions {
     public static void setWeather() {
 
         day++;
-        if (day > 30 && season.equals("Dry")) {
+        if (day > seasonLength && season.equals("Dry")) {
             day = 1;
             season = "Wet";
             Bukkit.broadcastMessage("The season is shifting into a wet weather season. Expect lots of rain and thunder for the next 20 days!");
-        } else if (day > 30 && season.equals("Wet")) {
+        } else if (day > seasonLength && season.equals("Wet")) {
             Bukkit.broadcastMessage("The season is shifting into a dry weather season. Expect lots of sun and nearly no rain for the next 20 days!");
             season = "Dry";
         }
 
         Random random = new Random();
         int r = random.nextInt(10);
-        if (weather.equals("Wet")) {
+        if (season.equals("Wet")) {
             world.setStorm(r < 5);
             stormingAllDay = world.hasStorm();
         } else {

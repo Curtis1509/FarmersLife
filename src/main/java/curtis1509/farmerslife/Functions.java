@@ -120,9 +120,13 @@ public class Functions {
             players.add(fileReader.loadPlayer(player));
         }
 
-        player.sendTitle(ChatColor.GOLD + "Farmers Life", ChatColor.BLUE + season + " Season");
+        sendTitle(player, "Farmers Life",season + " Season");
         giveFarmersCompass(player);
         punishLogout.remove(player.getName());
+    }
+
+    public static void sendTitle(org.bukkit.entity.Player player, String upper, String lower) {
+        player.sendTitle(net.md_5.bungee.api.ChatColor.GOLD + upper, net.md_5.bungee.api.ChatColor.BLUE + lower);
     }
 
     public static void giveFarmersCompass(org.bukkit.entity.Player player){

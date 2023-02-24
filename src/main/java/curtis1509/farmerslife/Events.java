@@ -23,12 +23,15 @@ import org.bukkit.event.player.*;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 
 import java.io.IOException;
 import java.util.*;
 
 import static curtis1509.farmerslife.FarmersLife.*;
 import static org.bukkit.Bukkit.getLogger;
+import static org.bukkit.Bukkit.getOnlinePlayers;
 
 public class Events extends Functions implements Listener {
 
@@ -59,6 +62,7 @@ public class Events extends Functions implements Listener {
 
     @EventHandler
     public void craft(PrepareItemCraftEvent event) {
+
         boolean golemNerf = false;
         boolean shopNerf = false;
         try {

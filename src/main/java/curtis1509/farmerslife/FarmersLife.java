@@ -143,7 +143,7 @@ public class FarmersLife extends JavaPlugin implements CommandExecutor {
     public void broadcastLateMessage() {
         for (org.bukkit.entity.Player player : Bukkit.getOnlinePlayers()) {
             if (!player.isSleeping()) {
-                sendTitle(player, "It's Getting Late", "Zzzzzzz....");
+                Functions.sendTitle(player, "It's Getting Late", "Zzzzzzz....");
                 message(player, "It's getting late you're going to pass out soon... Hurry back to bed!");
             }
         }
@@ -286,10 +286,6 @@ public class FarmersLife extends JavaPlugin implements CommandExecutor {
                 player.sendTitle(net.md_5.bungee.api.ChatColor.GOLD + upper, ChatColor.BLUE + lower);
             }
         }
-    }
-
-    public void sendTitle(org.bukkit.entity.Player player, String upper, String lower) {
-        player.sendTitle(net.md_5.bungee.api.ChatColor.GOLD + upper, net.md_5.bungee.api.ChatColor.BLUE + lower);
     }
 
 

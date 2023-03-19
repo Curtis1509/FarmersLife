@@ -235,7 +235,7 @@ public class Functions {
                         itemMoney = nerfIncome(is, owner);
                     }
                     i += itemMoney;
-                    fileReader.addStat(is.getType().name(), itemMoney);
+                    getPlayer(owner).updateDailyDepositHistory(is.getType().name(), itemMoney);
                 }
             }
         }

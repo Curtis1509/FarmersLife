@@ -298,7 +298,7 @@ public class Events extends Functions implements Listener {
         getPlayer(event.getEntity()).deathInventoryi = 3;
         message(event.getEntity(),"Oh no! You were knocked out unconscious and lost some items");
         sendClickableCommand(event.getEntity(), "&9[FarmersLife] &6Click to &2[GET] &6 some of your lost items back", "deathinventory");
-        giveCompass(event.getEntity());
+        giveFarmersCompass(event.getEntity());
     }
     @EventHandler
     public void onInteract(PlayerInteractAtEntityEvent event) {

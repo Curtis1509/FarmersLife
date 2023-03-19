@@ -207,7 +207,6 @@ public class FarmersLife extends JavaPlugin implements CommandExecutor {
 
                         try {
                             economy.depositPlayer(player.getPlayer(), Functions.getAmountOfCash(depositCrops, chest.getInventory(), player.getName()) * player.getSkills().skillProfits.getMultiplier());
-                            fileReader.saveStats(day, player.getName());
                         } catch (IOException e) {
                             e.printStackTrace();
                         }

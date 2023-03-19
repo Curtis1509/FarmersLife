@@ -6,6 +6,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import java.text.DecimalFormat;
+import java.util.HashMap;
 import java.util.LinkedList;
 
 import static curtis1509.farmerslife.FarmersLife.*;
@@ -24,6 +25,7 @@ public class Player {
     double todaysCash = 0;
     boolean inPen = false;
     LinkedList<ItemStack> deliveryOrder = new LinkedList<ItemStack>();
+    private HashMap<String, Double> dailyDepositHistory = new HashMap<>();
 
 
     public Player(org.bukkit.entity.Player player, int profitSkill, boolean protection, boolean bedperk, boolean teleport) {
@@ -37,6 +39,21 @@ public class Player {
         );
         scoreboard.addPlayer(player);
         scoreboard.updateScoreboard();
+    }
+
+    public HashMap<String, Double> getDailyDepositHistory(){
+        return dailyDepositHistory;
+    }
+
+    public void updateDailyDepositHistory(String item, double amount){
+        if (dailyDepositHistory.containsKey(item))
+            dailyDepositHistory.replace(item, amount + dailyDepositHistory.get(item));
+        else
+            dailyDepositHistory.put(item, amount);
+    }
+
+    public void clearDailyDepositHistory(){
+        dailyDepositHistory.clear();
     }
 
     public void refreshPlayer(){

@@ -29,7 +29,7 @@ public class SkillProfits {
 
     public boolean LevelUp(Player player, double money){
         if (money >= cost){
-            player.removeCash(cost);
+            FarmersLife.economy.withdrawPlayer(player.getPlayer(),cost);
             level++;
             cost+=500;
             cost*=1.1;

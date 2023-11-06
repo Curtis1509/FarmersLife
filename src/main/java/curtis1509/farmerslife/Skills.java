@@ -14,6 +14,9 @@ import org.bukkit.inventory.meta.ItemMeta;
 import java.util.Collections;
 import java.util.Objects;
 
+import static curtis1509.farmerslife.FarmersLife.economy;
+import static curtis1509.farmerslife.Functions.message;
+
 public class Skills {
 
     public Inventory skillsInventory = Bukkit.createInventory(null, 18, "Skills");
@@ -32,12 +35,12 @@ public class Skills {
 
     public void populateSkillsInventory(Player player) {
         skillsInventory.addItem(createItem(Material.CHEST, "Profits " + (skillProfits.getLevel() + 1) + " | $" + (int) Math.ceil(skillProfits.cost),
-                "+0.1x | " + " Current: " + skillProfits.getMultiplier() + "x"));
+                "+0.1x | " + " Current: " + (double) Math.round(skillProfits.getMultiplier() * 100) / 100 + "x"));
         if (!protection)
-            skillsInventory.addItem(createItem(Material.DIAMOND_CHESTPLATE, "Protection III | $42,000",
+            skillsInventory.addItem(createItem(Material.DIAMOND_CHESTPLATE, "Protection IV | $42,000",
                     "This is permanent and will be applied to any armour piece you craft."));
         else
-            skillsInventory.addItem(createItem(Material.DIAMOND_CHESTPLATE, "Protection III",
+            skillsInventory.addItem(createItem(Material.DIAMOND_CHESTPLATE, "Protection IV",
                     "UNLOCKED"));
         if (!bedperk)
             skillsInventory.addItem(createItem(Material.RED_BED, "Bed Perk | $20,000",
@@ -70,57 +73,60 @@ public class Skills {
             cost *= 1.05;
         }
 
-        if (FarmersLife.economy.getBalance(player) > cost) {
-            if (player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue() < 60) {
-                FarmersLife.economy.withdrawPlayer(player, cost);
-                player.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(health*2 + 2);
+        if (economy.getBalance(player) > cost) {
+            if (Objects.requireNonNull(player.getAttribute(Attribute.GENERIC_MAX_HEALTH)).getValue() < 60) {
+                economy.withdrawPlayer(player, cost);
+                Objects.requireNonNull(player.getAttribute(Attribute.GENERIC_MAX_HEALTH)).setBaseValue(health*2 + 2);
                 skillsInventory.remove(Material.APPLE);
                 cost += 1000;
                 cost *= 1.05;
-                if (player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue() < 60)
+                if (Objects.requireNonNull(player.getAttribute(Attribute.GENERIC_MAX_HEALTH)).getValue() < 60)
                     skillsInventory.addItem(createItem(Material.APPLE, "+1 Heart | $" + (int)Math.ceil(cost), health+1 + "/30 Hearts"));
                 else
                     skillsInventory.addItem(createItem(Material.APPLE, "MAXIMUM HEALTH REACHED", health+1 + "/30 Hearts"));
                 spawnFireworks(player.getLocation(),1);
-                player.setHealth(player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue());
+                player.setHealth(Objects.requireNonNull(player.getAttribute(Attribute.GENERIC_MAX_HEALTH)).getValue());
                 return true;
-            } else player.sendMessage("You have the maximum 30/30 hearts");
+            } else message(player,"You have the maximum 30/30 hearts");
         } else
             player.sendMessage("Sorry, you don't have enough money to buy more health.");
         return false;
     }
 
     public void protectArmour(Player player) {
-        Objects.requireNonNull(player.getInventory().getChestplate()).addEnchantment(Enchantment.PROTECTION_ENVIRONMENTAL, 3);
-        Objects.requireNonNull(player.getInventory().getLeggings()).addEnchantment(Enchantment.PROTECTION_ENVIRONMENTAL, 3);
-        Objects.requireNonNull(player.getInventory().getHelmet()).addEnchantment(Enchantment.PROTECTION_ENVIRONMENTAL, 3);
-        Objects.requireNonNull(player.getInventory().getBoots()).addEnchantment(Enchantment.PROTECTION_ENVIRONMENTAL, 3);
+        try {
+            Objects.requireNonNull(player.getInventory().getChestplate()).addEnchantment(Enchantment.PROTECTION_ENVIRONMENTAL, 4);
+            Objects.requireNonNull(player.getInventory().getLeggings()).addEnchantment(Enchantment.PROTECTION_ENVIRONMENTAL, 4);
+            Objects.requireNonNull(player.getInventory().getHelmet()).addEnchantment(Enchantment.PROTECTION_ENVIRONMENTAL, 4);
+            Objects.requireNonNull(player.getInventory().getBoots()).addEnchantment(Enchantment.PROTECTION_ENVIRONMENTAL, 4);
+
+        }catch(Exception ignored){}
     }
 
     public void buyProtection(curtis1509.farmerslife.Player player) {
-        if (player.getCash() >= 42000) {
-            player.removeCash(42000);
+        if (economy.getBalance(player.getPlayer()) >= 42000) {
+            economy.withdrawPlayer(player.getPlayer(),42000);
             protection = true;
             protectArmour(player.getPlayer());
-            Bukkit.broadcastMessage("Congratulations to " + player.getPlayer().getName() + " for unlocking the permanent Protection III");
+            Bukkit.broadcastMessage("Congratulations to " + player.getPlayer().getName() + " for unlocking the permanent Protection IV");
             player.getPlayer().playSound(player.getPlayer().getLocation(), Sound.BLOCK_ANVIL_USE, 3, 1);
-            skillsInventory.setItem(2, createItem(Material.DIAMOND_CHESTPLATE, "Protection III",
+            skillsInventory.setItem(1, createItem(Material.DIAMOND_CHESTPLATE, "Protection IV",
                     "UNLOCKED"));
         } else {
-            player.getPlayer().sendMessage("Sorry, you don't have enough money for Protection III. You need $" + (42000 - player.getCash()) + " more");
+            player.getPlayer().sendMessage("Sorry, you don't have enough money for Protection IV. You need $" + (42000 - economy.getBalance(player.getPlayer())) + " more");
         }
     }
 
     public void buyBedPerk(curtis1509.farmerslife.Player player) {
-        if (player.getCash() >= 20000) {
-            player.removeCash(20000);
+        if (economy.getBalance(player.getPlayer()) >= 20000) {
+            economy.withdrawPlayer(player.getPlayer(),20000);
             bedperk = true;
             Bukkit.broadcastMessage("Congratulations to " + player.getPlayer().getName() + " for unlocking the bed perk!");
             spawnFireworks(player.getPlayer().getLocation(), 1);
-            skillsInventory.setItem(3, createItem(Material.RED_BED, "Bed Perk",
+            skillsInventory.setItem(2, createItem(Material.RED_BED, "Bed Perk",
                     "UNLOCKED"));
         } else {
-            player.getPlayer().sendMessage("Sorry, you don't have enough money for Bed Perk. You need $" + (20000 - player.getCash()) + " more");
+            player.getPlayer().sendMessage("Sorry, you don't have enough money for Bed Perk. You need $" + (20000 - economy.getBalance(player.getPlayer())) + " more");
         }
     }
 

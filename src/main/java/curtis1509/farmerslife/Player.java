@@ -5,8 +5,10 @@ import dev.jcsoftware.jscoreboards.JScoreboardTeam;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
+import java.text.DecimalFormat;
 import java.util.LinkedList;
 
+import static curtis1509.farmerslife.FarmersLife.*;
 import static org.bukkit.Bukkit.getLogger;
 
 public class Player {
@@ -31,16 +33,17 @@ public class Player {
         scoreboard = new JPerPlayerMethodBasedScoreboard();
         scoreboard.setTitle(player, "&aFarmers HUD");
         scoreboard.setLines(
-                player, "&6$" + FarmersLife.economy.getBalance(player)
+                player, "&6$" + economy.getBalance(player)
         );
         scoreboard.addPlayer(player);
         scoreboard.updateScoreboard();
     }
 
-    public LinkedList<ItemStack> getDeliveryOrder(){
+    public LinkedList<ItemStack> getDeliveryOrder() {
         return deliveryOrder;
     }
-    public void addDelivery(ItemStack itemStack){
+
+    public void addDelivery(ItemStack itemStack) {
         deliveryOrder.add(itemStack);
     }
 
@@ -64,7 +67,7 @@ public class Player {
         scoreboard = new JPerPlayerMethodBasedScoreboard();
         scoreboard.setTitle(player, "&aFarmers HUD");
         scoreboard.setLines(
-                player, "&6$" + FarmersLife.economy.getBalance(player)
+                player, "&6$" + economy.getBalance(player)
         );
         scoreboard.addPlayer(player);
         scoreboard.updateScoreboard();
@@ -91,21 +94,14 @@ public class Player {
         deathInventory = null;
     }
 
-    public void removeCash(double amount) {
-        FarmersLife.economy.withdrawPlayer(player, amount);
-        scoreboard.setLines(
-                player, "&a$&6" + FarmersLife.economy.getBalance(player)
-        );
-        scoreboard.updateScoreboard();
-    }
-
-    public double getCash() {
-        return FarmersLife.economy.getBalance(player);
-    }
-
     public void updateScoreboard(String time) {
+
+        DecimalFormat df = new DecimalFormat("#.##");
+        df.setGroupingUsed(true);
+        df.setGroupingSize(3);
+
         scoreboard.setLines(
-                player, "&6$" + Math.floor(FarmersLife.economy.getBalance(player)), time, "Weather Season: &6" + FarmersLife.weather, "Days Remaining: &6" + FarmersLife.dayNumber
+                player, "&6$" + df.format(Math.floor(economy.getBalance(player))), time, "Weather Season: &6" + weather, "Days Remaining: &6" + Functions.normalizeDayNumber()
         );
         scoreboard.updateScoreboard();
     }
@@ -120,14 +116,6 @@ public class Player {
 
     public JPerPlayerMethodBasedScoreboard getScoreboard() {
         return scoreboard;
-    }
-
-    public void addCash(double cash) {
-        FarmersLife.economy.depositPlayer(player, cash);
-        scoreboard.setTitle(player, "Farmers HUD");
-        scoreboard.setLines(
-                player, "$" + Math.floor(FarmersLife.economy.getBalance(player)));
-        scoreboard.updateScoreboard();
     }
 
 }

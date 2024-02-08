@@ -1,0 +1,60 @@
+#Animals can be entered in lowercase or uppercase but they must comply to the 
+#Minecraft EntityType naming conventions
+#ie. mooshrooms must be MUSHROM_COW or mushroom_cow  
+animals:
+    cow:
+        cost: 12
+    pig:
+        cost: 12
+    panda:
+        cost: 25
+    donkey:
+        cost: 20
+    horse:
+        cost: 20
+    chicken:
+        cost: 12
+    villager:
+        cost: 22
+    cat:
+        cost: 20
+    wolf:
+        cost: 20
+    axolotl:
+        cost: 20
+    allay:
+        cost: 100
+    bee:
+        cost: 20
+    bat:
+        cost: 12
+    dolphin:
+        cost: 25
+    tropical_fish:
+        cost: 20
+    pufferfish:
+        cost: 21
+    salmon:
+        cost: 18
+    cod:
+        cost: 18
+    fox:
+        cost: 24
+    rabbit:
+        cost: 12
+    frog:
+        cost: 25
+    skeleton_horse:
+        cost: 20
+    parrot:
+        cost: 23
+    llama:
+        cost: 24
+    goat:
+        cost: 23
+    mule:
+        cost: 12
+    mushroom_cow:
+        cost: 19
+    squid:
+        cost: 24

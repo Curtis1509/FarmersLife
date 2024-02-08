@@ -1,0 +1,425 @@
+slots: 27
+
+#default chance of item not being skipped when selected via the algorithm.
+#ie. If there is 10 slots and 100 items then there is a 10% chance of each item being chosen.
+#However if that item has a 1.0 shop chance then it has a 5% chance of being chosen.
+shopchance: 1.0
+
+#default chance of a special taking place
+specialchance: 0.25
+
+#default chance of an item being free
+freechance: 0.01
+
+generalitems:
+  WHEAT_SEEDS:
+    cost: 15
+    amount: 8
+  MELON_SEEDS:
+    cost: 5
+    amount: 1
+  PUMPKIN_SEEDS:
+    cost: 5
+    amount: 1
+  CARROT:
+    cost: 15
+    amount: 8
+  POTATO:
+    cost: 15
+    amount: 8
+  SUGAR_CANE:
+    cost: 100
+    amount: 8
+  CACTUS:
+    cost: 100
+    amount: 8
+  COCOA_BEANS:
+    cost: 25
+    amount: 4
+  BEETROOT_SEEDS:
+    cost: 15
+    amount: 8
+  BONE_MEAL:
+    cost: 4
+    amount: 8
+
+items:
+  ELYTRA:
+    cost: 10000
+    special: 8950
+    amount: 1
+    shopchance: 0.4
+  CONDUIT:
+    cost: 20000
+    special: 18000
+    amount: 1
+    shopchance: 0.4
+  DIAMOND_BLOCK:
+    cost: 2000
+    special: 1000
+    amount: 1
+    specialchance: 0.1
+  FIREWORK_ROCKET:
+    cost: 200
+    special: 1000
+    amount: 16
+  MAGMA_BLOCK:
+    cost: 25
+    amount: 1
+  SOUL_SAND:
+    cost: 25
+    amount: 1
+  OBSIDIAN:
+    cost: 250
+    special: 175
+    amount: 1
+  LAVA_BUCKET:
+    cost: 75
+    amount: 1
+  SEA_LANTERN:
+    cost: 75
+    special: 45
+    amount: 1
+  GLOWSTONE:
+    cost: 40
+    amount: 1
+  TINTED_GLASS:
+    cost: 200
+    special: 150
+    amount: 1
+  MOSSY_COBBLESTONE:
+    cost: 50
+    amount: 8
+  TERRACOTTA:
+    cost: 125
+    special: 99
+    amount: 16
+  SHULKER_SHELL:
+    cost: 12500
+    special: 9999
+    amount: 2
+  EXPERIENCE_BOTTLE:
+    cost: 69
+    special: 49
+    amount: 1
+  PRISMARINE:
+    cost: 60
+    special: 40
+    amount: 4
+  NAME_TAG:
+    cost: 250
+    special: 100
+    amount: 1
+  ENDER_PEARL:
+    cost: 250
+    special: 175
+    amount: 4
+  CROSSBOW:
+    cost: 100
+    special: 15
+    amount: 1
+  NETHERITE_HELMET:
+    cost: 11000
+    special: 9900
+    amount: 1
+    shopchance: 0.5
+  NETHERITE_CHESTPLATE:
+    cost: 13500
+    special: 11200
+    amount: 1
+    shopchance: 0.3
+  NETHERITE_LEGGINGS:
+    cost: 12500
+    special: 11300
+    amount: 1
+    shopchance: 0.4
+  NETHERITE_BOOTS:
+    cost: 11000
+    special: 9900
+    amount: 0.6
+    shopchance: 0.5
+  ARROW:
+    cost: 250
+    special: 125
+    amount: 64
+  ENCHANTED_GOLDEN_APPLE:
+    cost: 2500
+    special: 1950
+    amount: 1
+    shopchance: 0.3
+  TOTEM_OF_UNDYING:
+    cost: 2500
+    special: 1990
+    amount: 2
+    shopchance: 0.3
+  SPYGLASS:
+    cost: 250
+    special: 65
+    amount: 1
+  GOLDEN_APPLE:
+    cost: 800
+    special: 600
+    amount: 3
+  MAP:
+    cost: 200
+    special: 175
+    amount: 1
+  BLAZE_ROD:
+    cost: 1000
+    special: 890
+    amount: 4
+  CREEPER_SPAWN_EGG:
+    cost: 350
+    special: 299
+    amount: 2
+    shopchance: 0.3
+  SLIME_BALL:
+    cost: 200
+    special: 150
+    amount: 3
+  WITHER_SKELETON_SKULL:
+    cost: 10000
+    special: 8000
+    amount: 1
+    shopchance: 0.3
+  GHAST_TEAR:
+    cost: 700
+    special: 600
+    amount: 2
+  BRAIN_CORAL_BLOCK:
+    cost: 500
+    special: 400
+    amount: 16
+  BUBBLE_CORAL_BLOCK:
+    cost: 500
+    special: 400
+    amount: 16
+  FIRE_CORAL_BLOCK:
+    cost: 500
+    special: 400
+    amount: 16
+  HORN_CORAL_BLOCK:
+    cost: 500
+    special: 400
+    amount: 16
+  TUBE_CORAL_BLOCK:
+    cost: 500
+    special: 400
+    amount: 16
+  REINFORCED_DEEPSLATE:
+    cost: 1000
+    special: 850
+    amount: 3
+  PINK_CONCRETE:
+    cost: 500
+    special: 350
+    amount: 32
+  YELLOW_CONCRETE:
+    cost: 500
+    special: 350
+    amount: 32
+  GRAY_CONCRETE:
+    cost: 500
+    special: 350
+    amount: 32
+  LIGHT_GRAY_CONCRETE:
+    cost: 500
+    special: 350
+    amount: 32
+  BLACK_CONCRETE:
+    cost: 500
+    special: 350
+    amount: 32
+  PURPLE_CONCRETE:
+    cost: 500
+    special: 350
+    amount: 32
+  BLUE_CONCRETE:
+    cost: 500
+    special: 350
+    amount: 32
+  LIGHT_BLUE_CONCRETE:
+    cost: 500
+    special: 350
+    amount: 32
+  CYAN_CONCRETE:
+    cost: 500
+    special: 350
+    amount: 32
+  RED_CONCRETE:
+    cost: 500
+    special: 350
+    amount: 32
+  MAGENTA_CONCRETE:
+    cost: 500
+    special: 350
+    amount: 32
+  BROWN_CONCRETE:
+    cost: 500
+    special: 350
+    amount: 32
+  WHITE_CONCRETE:
+    cost: 500
+    special: 350
+    amount: 32
+  GREEN_CONCRETE:
+    cost: 500
+    special: 350
+    amount: 32
+  LIME_CONCRETE:
+    cost: 500
+    special: 350
+    amount: 32
+  ORANGE_CONCRETE:
+    cost: 500
+    special: 350
+    amount: 32
+  PACKED_ICE:
+    cost: 200
+    special: 100
+    amount: 3
+  PEARLESCENT_FROGLIGHT:
+    cost: 1000
+    special: 800
+    amount: 2
+  VERDANT_FROGLIGHT:
+    cost: 1000
+    special: 800
+    amount: 2
+  OCHRE_FROGLIGHT:
+    cost: 1000
+    special: 800
+    amount: 2
+depositableitems:
+  WHEAT:
+    cost: 2.45
+  WHEAT_SEEDS:
+    cost: 0.09
+  EGG:
+    cost: 0.4
+  MILK_BUCKET:
+    cost: 7.50
+  CARROT:
+    cost: 0.67
+  BEEF:
+    cost: 3.5
+  COOKED_BEEF:
+    cost: 4.0
+  FEATHER:
+    cost: 3.50
+  PORKCHOP:
+    cost: 3.55
+  COOKED_PORKCHOP:
+    cost: 4.05
+  CHICKEN:
+    cost: 5.5
+  COOKED_CHICKEN:
+    cost: 6.0
+  MUTTON:
+    cost: 3.5
+  COOKED_MUTTON:
+    cost: 4.0
+  ROTTEN_FLESH:
+    cost: 0.5
+  COOKED_RABBIT:
+    cost: 10.0
+  RABBIT:
+    cost: 9.0
+  POTATO:
+    cost: 0.67
+  MELON_SLICE:
+    cost: 0.53
+  MELON:
+    cost: 4.77
+  BLAZE_ROD:
+    cost: 30
+  PUMPKIN:
+    cost: 2.30
+  TROPICAL_FISH:
+    cost: 11.5
+  PUFFERFISH:
+    cost: 12.0
+  COD:
+    cost: 10.5
+  SALMON:
+    cost: 11.5
+  COOKED_COD:
+    cost: 11.0
+  COOKED_SALMON:
+    cost: 12.0
+  CACTUS:
+    cost: 2.5
+  SUGAR_CANE:
+    cost: 0.25
+  KELP:
+    cost: 0.1
+  COCOA_BEANS:
+    cost: 1.10
+  DIAMOND:
+    cost: 200
+  DIAMOND_BLOCK:
+    cost: 2000
+  COPPER_INGOT:
+    cost: 9
+  COPPER_ORE:
+    cost: 7
+  RAW_COPPER:
+    cost: 7
+  RAW_COPPER_BLOCK:
+    cost: 70
+  COPPER_BLOCK:
+    cost: 90
+  COAL:
+    cost: 6.75
+  COAL_BLOCK:
+    cost: 70
+  EMERALD:
+    cost: 15
+  EMERALD_BLOCK:
+    cost: 135
+  ANCIENT_DEBRIS:
+    cost: 1000
+  IRON_ORE:
+    cost: 15
+  GREEN_DYE:
+    cost: 3.0
+  RAW_IRON:
+    cost: 12
+  IRON_INGOT:
+    cost: 9
+  IRON_BLOCK:
+    cost: 90
+  RAW_IRON_BLOCK:
+    cost: 120
+  GOLD_INGOT:
+    cost: 30
+  GOLD_ORE:
+    cost: 25
+  RAW_GOLD:
+    cost: 25
+  GOLD_BLOCK:
+    cost: 300
+  LAPIS_LAZULI:
+    cost: 6.5
+  LAPIS_BLOCK:
+    cost: 80
+  REDSTONE:
+    cost: 5
+  REDSTONE_BLOCK:
+    cost: 50
+  GLOWSTONE_DUST:
+    cost: 3.5
+  DRAGON_EGG:
+    cost: 10000
+  VILLAGER_SPAWN_EGG:
+    cost: 145
+  POPPY:
+    cost: 0.3
+  BONE:
+    cost: 7.0
+  GUNPOWDER:
+    cost: 10.0
+  STRING:
+    cost: 7.0
+  SPIDER_EYE:
+    cost: 10.0

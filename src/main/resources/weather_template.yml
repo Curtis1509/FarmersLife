@@ -1,0 +1,5 @@
+lengthOfSeason: 12
+dayInSeason: 0
+nameOfSeason: "Wet"
+chanceOfRainingInDrySeason: 0.1
+chanceOfRainingInWetSeason: 0.6

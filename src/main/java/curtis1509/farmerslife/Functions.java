@@ -1,9 +1,6 @@
 package curtis1509.farmerslife;
 
 import static curtis1509.farmerslife.FarmersLife.*;
-import static org.bukkit.Bukkit.getLogger;
-
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
 import net.md_5.bungee.api.chat.ClickEvent;
@@ -15,7 +12,6 @@ import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityCategory;
 import org.bukkit.entity.EntityType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -25,18 +21,12 @@ import org.bukkit.inventory.meta.ItemMeta;
 public class Functions {
 
   public static double calculateAnimalPayout(
-    Entity e,
-    curtis1509.farmerslife.Player player
-  ) {
+      Entity e,
+      curtis1509.farmerslife.Player player) {
     double multiplier = animalNames.get(e.getCustomName()) * 0.15;
-    double payout =
-      animalCost.get(e.getType()) + (animalCost.get(e.getType()) * multiplier);
+    double payout = animalCost.get(e.getType()) + (animalCost.get(e.getType()) * multiplier);
     payout = payout * player.getSkills().skillProfits.getMultiplier();
     return payout;
-  }
-
-  public static int normalizeDayNumber() {
-    if (dayNumber <= 20) return 20 - dayNumber; else return 40 - dayNumber;
   }
 
   public static boolean isDepositBox(Location location) {
@@ -81,11 +71,10 @@ public class Functions {
   }
 
   public static void addToInventory(
-    Inventory inventory,
-    Material material,
-    int price,
-    int amount
-  ) {
+      Inventory inventory,
+      Material material,
+      int price,
+      int amount) {
     ItemStack item = new ItemStack(material, amount);
     ItemMeta itemMeta = item.getItemMeta();
     itemMeta.setLore(Collections.singletonList("$" + price));
@@ -95,13 +84,12 @@ public class Functions {
   }
 
   public static void addToInventory(
-    Inventory inventory,
-    Material material,
-    int price,
-    int amount,
-    boolean isSpecial,
-    int deduction
-  ) {
+      Inventory inventory,
+      Material material,
+      int price,
+      int amount,
+      boolean isSpecial,
+      int deduction) {
     ItemStack item = new ItemStack(material, amount);
     ItemMeta itemMeta = item.getItemMeta();
     List<String> lore = new ArrayList<String>();
@@ -118,12 +106,11 @@ public class Functions {
   }
 
   public static void addToInventory(
-    Inventory inventory,
-    Material material,
-    String name,
-    String text,
-    int index
-  ) {
+      Inventory inventory,
+      Material material,
+      String name,
+      String text,
+      int index) {
     ItemStack item = new ItemStack(material, 1);
     ItemMeta itemMeta = item.getItemMeta();
     itemMeta.setDisplayName(name);
@@ -137,8 +124,7 @@ public class Functions {
     ItemMeta compassMeta = player.getInventory().getItem(8).getItemMeta();
     compassMeta.setDisplayName("Farmers Compass");
     compassMeta.setLore(
-      Collections.singletonList("Access the Farmers Main Menu")
-    );
+        Collections.singletonList("Access the Farmers Main Menu"));
     player.getInventory().getItem(8).setItemMeta(compassMeta);
   }
 
@@ -160,30 +146,23 @@ public class Functions {
       }
     }
     player.sendTitle(
-      ChatColor.GOLD + "Farmers Life",
-      ChatColor.BLUE + weather + " Season"
-    );
-    if (!playerExists) players.add(
-      new curtis1509.farmerslife.Player(
-        player,
-        fileReader.loadPlayerSkillProfits(player.getName()),
-        fileReader.loadPerk(player.getName(), "protection"),
-        fileReader.loadPerk(player.getName(), "bedperk"),
-        fileReader.loadPerk(player.getName(), "teleport")
-      )
-    );
+        ChatColor.GOLD + "Farmers Life",
+        ChatColor.BLUE + FarmersLife.weather.getCurrentSeason() + " Season");
+    if (!playerExists)
+      players.add(
+          new curtis1509.farmerslife.Player(
+              player,
+              fileReader.loadPlayerSkillProfits(player.getName()),
+              fileReader.loadPerk(player.getName(), "protection"),
+              fileReader.loadPerk(player.getName(), "bedperk"),
+              fileReader.loadPerk(player.getName(), "teleport")));
 
-    player.getInventory().setItem(8, new ItemStack(Material.COMPASS, 1));
-    ItemMeta compassMeta = player.getInventory().getItem(8).getItemMeta();
-    compassMeta.setDisplayName("Farmers Compass");
-    compassMeta.setLore(Collections.singletonList("Farmers Main Menu"));
-    player.getInventory().getItem(8).setItemMeta(compassMeta);
+    giveCompass(player);
     punishLogout.remove(player.getName());
   }
 
   public static LinkedList<DepositBox> getDepositBoxes(
-    org.bukkit.entity.Player player
-  ) {
+      org.bukkit.entity.Player player) {
     LinkedList<DepositBox> boxes = new LinkedList<>();
     for (DepositBox box : depositBoxes) {
       if (box.getOwner().equals(player.getName())) {
@@ -213,19 +192,17 @@ public class Functions {
       Enchantment[] values = Enchantment.values();
       Enchantment enchantment = values[random.nextInt(values.length)];
       meta.addStoredEnchant(
-        enchantment,
-        random.nextInt(enchantment.getMaxLevel()) + 1,
-        true
-      );
+          enchantment,
+          random.nextInt(enchantment.getMaxLevel()) + 1,
+          true);
       book.setItemMeta(meta);
       player.getInventory().addItem(book);
     }
   }
 
   public static boolean containsItem(
-    LinkedList<DepositCrop> depositCrops,
-    ItemStack itemStack
-  ) {
+      LinkedList<DepositCrop> depositCrops,
+      ItemStack itemStack) {
     for (DepositCrop crop : depositCrops) {
       if (crop.getMaterial() == itemStack.getType()) {
         return true;
@@ -235,9 +212,8 @@ public class Functions {
   }
 
   public static DepositCrop getCropFromList(
-    LinkedList<DepositCrop> depositCrops,
-    ItemStack itemStack
-  ) {
+      LinkedList<DepositCrop> depositCrops,
+      ItemStack itemStack) {
     for (DepositCrop crop : depositCrops) {
       if (crop.getMaterial() == itemStack.getType()) {
         return crop;
@@ -247,9 +223,8 @@ public class Functions {
   }
 
   public static int getAmountOf(
-    LinkedList<DepositCrop> depositCrops,
-    Inventory inventory
-  ) {
+      LinkedList<DepositCrop> depositCrops,
+      Inventory inventory) {
     int i = 0;
     for (ItemStack is : inventory.getContents()) {
       if (is != null) {
@@ -269,8 +244,10 @@ public class Functions {
       for (int i = 0; i < itemStack.getAmount(); i++) {
         double localMoney = itemWorth;
         for (int j = 0; j < golemIronSoldToday; j++) {
-          if (itemStack.getType() == Material.IRON_BLOCK) localMoney *=
-            0.91; else localMoney *= 0.99;
+          if (itemStack.getType() == Material.IRON_BLOCK)
+            localMoney *= 0.91;
+          else
+            localMoney *= 0.99;
         }
         money += localMoney;
         golemIronSoldToday++;
@@ -281,29 +258,26 @@ public class Functions {
   }
 
   public static double getAmountOfCash(
-    LinkedList<DepositCrop> depositCrops,
-    Inventory inventory,
-    String owner
-  ) throws IOException {
+      LinkedList<DepositCrop> depositCrops,
+      Inventory inventory,
+      String owner) throws IOException {
     double i = 0;
     for (ItemStack is : inventory.getContents()) {
       if (is != null) {
-        if (
-          containsItem(depositCrops, is) &&
-          !Objects
-            .requireNonNull(is.getItemMeta())
-            .getDisplayName()
-            .contains("Shop") &&
-          !Objects
-            .requireNonNull(is.getItemMeta())
-            .getDisplayName()
-            .contains("Immature")
-        ) {
+        if (containsItem(depositCrops, is) &&
+            !Objects
+                .requireNonNull(is.getItemMeta())
+                .getDisplayName()
+                .contains("Shop")
+            &&
+            !Objects
+                .requireNonNull(is.getItemMeta())
+                .getDisplayName()
+                .contains("Immature")) {
           double itemMoney;
-          if (!is.getItemMeta().getDisplayName().contains("GOLEM")) itemMoney =
-            (
-              is.getAmount() * getCropFromList(depositCrops, is).getReward()
-            ); else {
+          if (!is.getItemMeta().getDisplayName().contains("GOLEM"))
+            itemMoney = (is.getAmount() * getCropFromList(depositCrops, is).getReward());
+          else {
             itemMoney = nerfIncome(is, owner);
           }
           i += itemMoney;
@@ -315,18 +289,14 @@ public class Functions {
   }
 
   public static void sendClickableCommand(
-    org.bukkit.entity.Player player,
-    String message,
-    String command
-  ) {
+      org.bukkit.entity.Player player,
+      String message,
+      String command) {
     TextComponent component = new TextComponent(
-      TextComponent.fromLegacyText(
-        ChatColor.translateAlternateColorCodes('&', message)
-      )
-    );
+        TextComponent.fromLegacyText(
+            ChatColor.translateAlternateColorCodes('&', message)));
     component.setClickEvent(
-      new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/" + command)
-    );
+        new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/" + command));
     player.spigot().sendMessage(component);
   }
 
@@ -352,38 +322,11 @@ public class Functions {
       mins = (int) Math.floor((60 / (1000 / (ticks % 1000))));
       ampm = "AM";
     }
-    if (hours == 0) hours = 12;
-    if (mins < 10) return hours + ":0" + mins + ampm;
+    if (hours == 0)
+      hours = 12;
+    if (mins < 10)
+      return hours + ":0" + mins + ampm;
     return hours + ":" + mins + ampm;
-  }
-
-  public static void setWeather() {
-    dayNumber++;
-    if (dayNumber > 40) {
-      dayNumber = 1;
-      Bukkit.broadcastMessage(
-        "The season is shifting into a wet weather season. Expect lots of rain and thunder for the next 20 days!"
-      );
-    } else if (day == 20) {
-      Bukkit.broadcastMessage(
-        "The season is shifting into a dry weather season. Expect lots of sun and nearly no rain for the next 20 days!"
-      );
-    }
-
-    if (day >= 20 && day < 40) {
-      weather = "Dry";
-    } else if (day > 0 && day < 20) {
-      weather = "Wet";
-    }
-
-    Random random = new Random();
-    int r = random.nextInt(10);
-    if (weather.equals("Wet")) {
-      world.setStorm(r < 5);
-      stormingAllDay = world.hasStorm();
-    } else {
-      world.setStorm(r > 8);
-    }
   }
 
   public static boolean withinRangeOfBed(curtis1509.farmerslife.Player player) {
@@ -392,24 +335,22 @@ public class Functions {
     int z = player.getPlayer().getLocation().getBlockZ();
 
     int bx = Objects
-      .requireNonNull(player.getPlayer().getBedSpawnLocation())
-      .getBlockX();
+        .requireNonNull(player.getPlayer().getBedSpawnLocation())
+        .getBlockX();
     int by = Objects
-      .requireNonNull(player.getPlayer().getBedSpawnLocation())
-      .getBlockY();
+        .requireNonNull(player.getPlayer().getBedSpawnLocation())
+        .getBlockY();
     int bz = Objects
-      .requireNonNull(player.getPlayer().getBedSpawnLocation())
-      .getBlockZ();
+        .requireNonNull(player.getPlayer().getBedSpawnLocation())
+        .getBlockZ();
 
     double distance = Math.sqrt(
-      Math.pow(x - bx, 2) + Math.pow(y - by, 2) + Math.pow(z - bz, 2)
-    );
+        Math.pow(x - bx, 2) + Math.pow(y - by, 2) + Math.pow(z - bz, 2));
     return distance <= 100;
   }
 
   public static curtis1509.farmerslife.Player getPlayer(
-    org.bukkit.entity.Player player
-  ) {
+      org.bukkit.entity.Player player) {
     for (curtis1509.farmerslife.Player p : players) {
       if (p.getPlayer() == player) {
         return p;
@@ -427,15 +368,16 @@ public class Functions {
     return null;
   }
 
-  public static void reloadShop() {
+  public static void reloadShop(boolean includeDepositShop) {
     buyInventory.clear();
     buyInventory2.clear();
     buyItems.clear();
     animalCost.clear();
-    depositCrops.clear();
+    if (includeDepositShop)
+      depositCrops.clear();
     generalInventory.clear();
 
-    fileReader.FileProcessReloadShop();
+    fileReader.FileProcessReloadShop(includeDepositShop);
   }
 
   public static void broadcast(String message) {
@@ -446,13 +388,11 @@ public class Functions {
 
   public static void message(org.bukkit.entity.Player player, String message) {
     player.sendMessage(
-      ChatColor.BLUE + "[FarmersLife] " + ChatColor.YELLOW + message
-    );
+        ChatColor.BLUE + "[FarmersLife] " + ChatColor.YELLOW + message);
   }
 
   public static void message(CommandSender player, String message) {
     player.sendMessage(
-      ChatColor.BLUE + "[FarmersLife] " + ChatColor.YELLOW + message
-    );
+        ChatColor.BLUE + "[FarmersLife] " + ChatColor.YELLOW + message);
   }
 }

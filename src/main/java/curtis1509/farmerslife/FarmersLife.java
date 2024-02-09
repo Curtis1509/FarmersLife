@@ -4,6 +4,7 @@ import static curtis1509.farmerslife.Functions.getPlayer;
 import static curtis1509.farmerslife.Functions.message;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Objects;
@@ -30,26 +31,22 @@ public class FarmersLife extends JavaPlugin implements CommandExecutor {
   public static HashMap<String, Integer> animalNames = new HashMap<>();
   public static HashMap<EntityType, Double> animalCost = new HashMap<>();
   public static Inventory menuInventory = Bukkit.createInventory(
-    null,
-    9,
-    "Farmers Life Menu"
-  );
+      null,
+      9,
+      "Farmers Life Menu");
   public static Inventory spawnerInventory = Bukkit.createInventory(
-    null,
-    9,
-    "Buy Spawners Inventory"
-  );
+      null,
+      9,
+      "Buy Spawners Inventory");
   public static Inventory generalInventory = Bukkit.createInventory(
-    null,
-    18,
-    "Sally's General Store"
-  );
+      null,
+      18,
+      "Sally's General Store");
   public static Inventory buyInventory = Bukkit.createInventory(null, 9, "Buy");
   public static Inventory buyInventory2 = Bukkit.createInventory(
-    null,
-    54,
-    "Buy"
-  );
+      null,
+      54,
+      "Buy");
   public static LinkedList<DepositCrop> depositCrops = new LinkedList<>();
   public static LinkedList<curtis1509.farmerslife.Player> players = new LinkedList<>();
   public static LinkedList<BuyItem> buyItems = new LinkedList<>();
@@ -58,24 +55,29 @@ public class FarmersLife extends JavaPlugin implements CommandExecutor {
   public static LinkedList<DepositBox> depositBoxes = new LinkedList<>();
   public static LinkedList<Pen> pens = new LinkedList<>();
   public static LinkedList<Location> shopBlockLocations = new LinkedList<>();
-  public static String weather = "Wet";
+
   public static String bestPlayerName = "";
-  public static long day;
-  public static int dayNumber;
   public static World world;
-  public static FileReader fileReader = new FileReader();
+  public static FileReader fileReader;
   public static boolean shouldDayEndEarly = false;
   public static boolean stormingAllDay;
   public static double bestCashAmount = 0;
   public static DefaultFiles defaultFiles = new DefaultFiles();
   public static Economy economy;
   private ConfigGenerator configGenerator = new ConfigGenerator();
+  public static Weather weather;
 
   @Override
   public void onEnable() {
+
+    configGenerator.generateConfigs();
+    fileReader = new FileReader();
+
     getServer().getPluginManager().registerEvents(new Events(), this);
     world = getServer().getWorld("world");
-    configGenerator.generateConfigs();
+
+    weather = new Weather();
+
     gameloop(this.getServer().getWorld("world"));
 
     setupEconomy();
@@ -84,55 +86,44 @@ public class FarmersLife extends JavaPlugin implements CommandExecutor {
     fileReader.FileProcessEnablePlugin();
 
     Functions.addToInventory(
-      menuInventory,
-      Material.WHEAT_SEEDS,
-      "Sally's General Store",
-      "",
-      0
-    );
+        menuInventory,
+        Material.WHEAT_SEEDS,
+        "Sally's General Store",
+        "",
+        0);
     Functions.addToInventory(
-      menuInventory,
-      Material.EXPERIENCE_BOTTLE,
-      "Skills Shop",
-      "",
-      1
-    );
+        menuInventory,
+        Material.EXPERIENCE_BOTTLE,
+        "Skills Shop",
+        "",
+        1);
     Functions.addToInventory(
-      menuInventory,
-      Material.GOLD_INGOT,
-      "Items Shop",
-      "",
-      2
-    );
+        menuInventory,
+        Material.GOLD_INGOT,
+        "Items Shop",
+        "",
+        2);
     Functions.addToInventory(
-      menuInventory,
-      Material.OAK_FENCE,
-      "Set Selling Pen",
-      "Sell of yer' cattle from an ol' rusty pen",
-      7
-    );
+        menuInventory,
+        Material.OAK_FENCE,
+        "Set Selling Pen",
+        "Sell of yer' cattle from an ol' rusty pen",
+        7);
     Functions.addToInventory(
-      menuInventory,
-      Material.ENCHANTED_BOOK,
-      "Card Pack $5000",
-      "5 Randomly Enchanted Books",
-      5
-    );
+        menuInventory,
+        Material.ENCHANTED_BOOK,
+        "Card Pack $5000",
+        "5 Randomly Enchanted Books",
+        5);
     Functions.addToInventory(
-      menuInventory,
-      Material.CHEST,
-      "Set Deposit Box",
-      "Set your deposit box then throw your harvests in and wait until morning",
-      8
-    );
+        menuInventory,
+        Material.CHEST,
+        "Set Deposit Box",
+        "Set your deposit box then throw your harvests in and wait until morning",
+        8);
 
-    try {
-      fileReader.getWeather();
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
     Functions.populateBuyInventory();
-    Functions.setWeather();
+    generateBonusItems();
     Functions.initAllPlayers();
   }
 
@@ -146,8 +137,8 @@ public class FarmersLife extends JavaPlugin implements CommandExecutor {
       return false;
     }
     RegisteredServiceProvider<Economy> rsp = getServer()
-      .getServicesManager()
-      .getRegistration(Economy.class);
+        .getServicesManager()
+        .getRegistration(Economy.class);
     if (rsp == null) {
       return false;
     }
@@ -157,33 +148,33 @@ public class FarmersLife extends JavaPlugin implements CommandExecutor {
 
   public void gameloop(final World world) {
     getServer()
-      .getScheduler()
-      .scheduleSyncRepeatingTask(
-        (Plugin) this,
-        new Runnable() {
-          public void run() {
-            long time = world.getTime();
+        .getScheduler()
+        .scheduleSyncRepeatingTask(
+            (Plugin) this,
+            new Runnable() {
+              public void run() {
+                long time = world.getTime();
 
-            //Gameplay events
-            for (curtis1509.farmerslife.Player player : players) {
-              player.updateScoreboard(Functions.getTime());
-              isPlayerCrossingSellingPenBoundry(player);
-            }
-            if (weather.equals("Wet") && stormingAllDay) updateWeather(time);
+                // Gameplay events
+                for (curtis1509.farmerslife.Player player : players) {
+                  player.updateScoreboard(Functions.getTime());
+                  isPlayerCrossingSellingPenBoundry(player);
+                }
+                weather.enforceDailyWeather();
 
-            //Time Events
-            if (
-              time > 15000 && Bukkit.getOnlinePlayers().size() > 1
-            ) shouldDayEndEarly = endDayEarly(); else if (
-              time == 19000
-            ) broadcastLateMessage(); else if (
-              time == 20000 || shouldDayEndEarly
-            ) endDay(); else if (time == 5) newDay();
-          }
-        },
-        1,
-        1
-      );
+                // Time Events
+                if (time > 15000 && Bukkit.getOnlinePlayers().size() > 1)
+                  shouldDayEndEarly = endDayEarly();
+                else if (time == 19000)
+                  broadcastLateMessage();
+                else if (time == 20000 || shouldDayEndEarly)
+                  endDay();
+                else if (time == 5)
+                  newDay();
+              }
+            },
+            1,
+            1);
   }
 
   public void isPlayerCrossingSellingPenBoundry(Player player) {
@@ -192,18 +183,17 @@ public class FarmersLife extends JavaPlugin implements CommandExecutor {
       if (pen.insidePen(player.getPlayer().getLocation())) {
         if (!player.inPen) {
           message(
-            player.getPlayer(),
-            "You're inside " + pen.owner + "'s selling pen"
-          );
+              player.getPlayer(),
+              "You're inside " + pen.owner + "'s selling pen");
           player.inPen = true;
         }
         inPen = true;
       }
     }
-    if (player.inPen && !inPen) message(
-      player.player,
-      "You've left the selling pen"
-    );
+    if (player.inPen && !inPen)
+      message(
+          player.player,
+          "You've left the selling pen");
     player.inPen = (inPen);
   }
 
@@ -212,9 +202,8 @@ public class FarmersLife extends JavaPlugin implements CommandExecutor {
       if (!player.isSleeping()) {
         sendTitle(player, "It's Getting Late", "Zzzzzzz....");
         message(
-          player,
-          "It's getting late you're going to pass out soon... Hurry back to bed!"
-        );
+            player,
+            "It's getting late you're going to pass out soon... Hurry back to bed!");
       }
     }
   }
@@ -227,7 +216,8 @@ public class FarmersLife extends JavaPlugin implements CommandExecutor {
         for (curtis1509.farmerslife.Player p : players) {
           if (p.getName().equals(player.getName())) {
             if (p.getSkills().bedperk) {
-              if (Functions.withinRangeOfBed(p)) total++;
+              if (Functions.withinRangeOfBed(p))
+                total++;
             }
           }
         }
@@ -236,37 +226,9 @@ public class FarmersLife extends JavaPlugin implements CommandExecutor {
         noOneInbed = false;
       }
     }
-    if (total == Bukkit.getOnlinePlayers().size() && !noOneInbed) return true;
+    if (total == Bukkit.getOnlinePlayers().size() && !noOneInbed)
+      return true;
     return false;
-  }
-
-  public void updateWeather(long time) {
-    if (
-      time == 19000 ||
-      time == 18000 ||
-      time == 17000 ||
-      time == 16000 ||
-      time == 15000 ||
-      time == 14000 ||
-      time == 13000 ||
-      time == 12000 ||
-      time == 11000 ||
-      time == 10000 ||
-      time == 9000 ||
-      time == 8000 ||
-      time == 7000 ||
-      time == 6000 ||
-      time == 5000 ||
-      time == 4000 ||
-      time == 3000 ||
-      time == 2000 ||
-      time == 1000
-    ) {
-      Random random = new Random();
-      if (world.hasStorm()) world.setStorm(
-        random.nextInt(10) > 2
-      ); else world.setStorm(random.nextInt(5) > 2);
-    }
   }
 
   public void processSellingPens() {
@@ -275,20 +237,16 @@ public class FarmersLife extends JavaPlugin implements CommandExecutor {
         for (Pen pen : pens) {
           if (pen.insidePen(mob.getLocation())) {
             economy.depositPlayer(
-              pen.owner,
-              Functions.calculateAnimalPayout(
-                mob,
-                Functions.getPlayer(pen.owner)
-              )
-            );
-            Functions
-              .getPlayer(pen.owner)
-              .addToTodaysCash(
+                pen.owner,
                 Functions.calculateAnimalPayout(
-                  mob,
-                  Functions.getPlayer(pen.owner)
-                )
-              );
+                    mob,
+                    Functions.getPlayer(pen.owner)));
+            Functions
+                .getPlayer(pen.owner)
+                .addToTodaysCash(
+                    Functions.calculateAnimalPayout(
+                        mob,
+                        Functions.getPlayer(pen.owner)));
             mob.remove();
           }
         }
@@ -304,14 +262,12 @@ public class FarmersLife extends JavaPlugin implements CommandExecutor {
           if (box.getOwner().equals(player.getName())) {
             try {
               economy.depositPlayer(
-                player.getPlayer(),
-                Functions.getAmountOfCash(
-                  depositCrops,
-                  chest.getInventory(),
-                  player.getName()
-                ) *
-                player.getSkills().skillProfits.getMultiplier()
-              );
+                  player.getPlayer(),
+                  Functions.getAmountOfCash(
+                      depositCrops,
+                      chest.getInventory(),
+                      player.getName()) *
+                      player.getSkills().skillProfits.getMultiplier());
               fileReader.saveStats(day, player.getName());
             } catch (IOException e) {
               e.printStackTrace();
@@ -320,26 +276,24 @@ public class FarmersLife extends JavaPlugin implements CommandExecutor {
           Thread wait = new Thread(() -> {
             try {
               player
-                .getPlayer()
-                .playSound(
-                  player.getPlayer().getLocation(),
-                  Sound.ENTITY_CHICKEN_AMBIENT,
-                  3,
-                  1
-                );
+                  .getPlayer()
+                  .playSound(
+                      player.getPlayer().getLocation(),
+                      Sound.ENTITY_CHICKEN_AMBIENT,
+                      3,
+                      1);
               try {
                 Thread.sleep(500);
               } catch (InterruptedException e) {
                 e.printStackTrace();
               }
               player
-                .getPlayer()
-                .playSound(
-                  player.getPlayer().getLocation(),
-                  Sound.ENTITY_CHICKEN_DEATH,
-                  3,
-                  1
-                );
+                  .getPlayer()
+                  .playSound(
+                      player.getPlayer().getLocation(),
+                      Sound.ENTITY_CHICKEN_DEATH,
+                      3,
+                      1);
             } catch (Exception e) {
               e.printStackTrace();
             }
@@ -350,33 +304,31 @@ public class FarmersLife extends JavaPlugin implements CommandExecutor {
         LinkedList<ItemStack> deliveryItems = new LinkedList<>();
         for (ItemStack delivery : chest.getInventory().getContents()) {
           if (delivery != null) {
-            if (
-              delivery.getItemMeta().getDisplayName().contains("Shop")
-            ) deliveryItems.add(delivery);
+            if (delivery.getItemMeta().getDisplayName().contains("Shop"))
+              deliveryItems.add(delivery);
           }
         }
 
         processMilkBuckets(chest);
 
-        for (ItemStack itemStack : deliveryItems) chest
-          .getInventory()
-          .addItem(itemStack);
+        for (ItemStack itemStack : deliveryItems)
+          chest
+              .getInventory()
+              .addItem(itemStack);
 
-        if (
-          box.isShipmentBox() && Functions.getPlayer(box.getOwner()) != null
-        ) {
+        if (box.isShipmentBox() && Functions.getPlayer(box.getOwner()) != null) {
           boolean itemsDelivered = false;
           for (ItemStack item : Functions
-            .getPlayer(box.getOwner())
-            .getDeliveryOrder()) {
+              .getPlayer(box.getOwner())
+              .getDeliveryOrder()) {
             itemsDelivered = true;
             chest.getInventory().addItem(item);
           }
           Functions.getPlayer(box.getOwner()).getDeliveryOrder().clear();
-          if (itemsDelivered) message(
-            Functions.getPlayer(box.getOwner()).getPlayer(),
-            "Your delivery has arrived inside your shipment box"
-          );
+          if (itemsDelivered)
+            message(
+                Functions.getPlayer(box.getOwner()).getPlayer(),
+                "Your delivery has arrived inside your shipment box");
         }
       }
     }
@@ -395,18 +347,17 @@ public class FarmersLife extends JavaPlugin implements CommandExecutor {
         }
       }
       message(
-        player.getPlayer(),
-        "You made $" + (int) Math.floor(player.getTodaysCash()) + " yesterday"
-      );
+          player.getPlayer(),
+          "You made $" + (int) Math.floor(player.getTodaysCash()) + " yesterday");
       player.resetTodaysCash();
     }
 
-    if (!bestPlayerName.equals("") && bestCashAmount > 0) Functions.broadcast(
-      "Well done to " +
-      bestPlayerName +
-      " for making the most money yesterday for a total of $" +
-      (int) Math.floor(bestCashAmount)
-    );
+    if (!bestPlayerName.equals("") && bestCashAmount > 0)
+      Functions.broadcast(
+          "Well done to " +
+              bestPlayerName +
+              " for making the most money yesterday for a total of $" +
+              (int) Math.floor(bestCashAmount));
     bestPlayerName = "";
     bestCashAmount = 0;
   }
@@ -415,27 +366,23 @@ public class FarmersLife extends JavaPlugin implements CommandExecutor {
     for (org.bukkit.entity.Player player : Bukkit.getOnlinePlayers()) {
       if (world.hasStorm()) {
         player.sendTitle(
-          net.md_5.bungee.api.ChatColor.GOLD + upper,
-          net.md_5.bungee.api.ChatColor.BLUE + lower
-        );
+            net.md_5.bungee.api.ChatColor.GOLD + upper,
+            net.md_5.bungee.api.ChatColor.BLUE + lower);
       } else {
         player.sendTitle(
-          net.md_5.bungee.api.ChatColor.GOLD + upper,
-          ChatColor.BLUE + lower
-        );
+            net.md_5.bungee.api.ChatColor.GOLD + upper,
+            ChatColor.BLUE + lower);
       }
     }
   }
 
   public void sendTitle(
-    org.bukkit.entity.Player player,
-    String upper,
-    String lower
-  ) {
+      org.bukkit.entity.Player player,
+      String upper,
+      String lower) {
     player.sendTitle(
-      net.md_5.bungee.api.ChatColor.GOLD + upper,
-      net.md_5.bungee.api.ChatColor.BLUE + lower
-    );
+        net.md_5.bungee.api.ChatColor.GOLD + upper,
+        net.md_5.bungee.api.ChatColor.BLUE + lower);
   }
 
   public void newDay() {
@@ -443,34 +390,106 @@ public class FarmersLife extends JavaPlugin implements CommandExecutor {
       animalNames.replace(key, animalNames.get(key) + 1);
     }
 
-    //Set the weather and announce the new day and weather
-    Functions.setWeather();
-    if (world.hasStorm()) broadcastTitle(
-      "Rise and Shine",
-      "Rainy Day"
-    ); else broadcastTitle("Rise and Shine", "Sunny Day");
+    // Set the weather and announce the new day and weather
+    weather.newDay();
+    if (weather.isRainingToday())
+      broadcastTitle(
+          "Rise and Shine",
+          "Rainy Day");
+    else
+      broadcastTitle("Rise and Shine", "Sunny Day");
 
     processSellingPens();
     processDepositBoxes();
     announceMostProfitableFarmer();
-    Functions.reloadShop();
+    Functions.reloadShop(false);
     fileReader.FileProcessNewDay();
+    generateBonusItems();
   }
 
-  //Milk Bucket Exchange. Takes milk buckets in deposit box (chest), processes them, and then returns empty buckets to the deposit box.
+  public static int day = 0;
+  public static Material cropBonus = null;
+  public static Material materialBonus = null;
+  public static Material mineralBonus = null;
+  public static Material animalBonus = null;
+
+  public void generateBonusItems() {
+    getLogger().info("Generating bonus items...");
+    day++;
+    if (Math.floorMod(day, 7) == 0 || cropBonus == null) {
+      day = 0;
+      ArrayList<Material> crop = getAllMatchingMaterials("crop");
+      ArrayList<Material> mineral = getAllMatchingMaterials("mineral");
+      ArrayList<Material> material = getAllMatchingMaterials("material");
+      ArrayList<Material> animal = getAllMatchingMaterials("animal");
+
+      Random random = new Random();
+      cropBonus = crop.get(random.nextInt(crop.size()));
+      materialBonus = mineral.get(random.nextInt(mineral.size()));
+      mineralBonus = material.get(random.nextInt(material.size()));
+      animalBonus = animal.get(random.nextInt(animal.size()));
+
+      setDepositCropBonus(cropBonus,materialBonus,mineralBonus,animalBonus);
+    }
+  }
+
+  public void setDepositCropBonus(Material cropBonus, Material materialBonus, Material mineralBonus, Material animalBonus){
+    for (DepositCrop depositCrop : depositCrops){
+      if (depositCrop.getMaterial().name().equals(cropBonus.name())
+      || depositCrop.getMaterial().name().equals(materialBonus.name())
+      || depositCrop.getMaterial().name().equals(mineralBonus.name())
+      || depositCrop.getMaterial().name().equals(animalBonus.name())){
+        Random random = new Random();
+        double randomNumber = 1 + random.nextDouble() * 2;
+        randomNumber = Math.round(randomNumber * 100.0) / 100.0;
+        depositCrop.setBonusActive(true, randomNumber);
+      }
+      else {
+        depositCrop.setBonusActive(false, 0);
+      }
+    }
+  }
+
+  public static double getMultiplier(Material material){
+    for (DepositCrop depositCrop : depositCrops){
+      if (material.name().equals(depositCrop.getMaterial().name())){
+        return depositCrop.getMultiplier();
+      }
+    }
+    return 0;
+  }
+
+  public ArrayList<Material> getAllMatchingMaterials(String type) {
+    ArrayList<Material> materials = new ArrayList<>();
+    for (DepositCrop material : depositCrops) {
+      try {
+        if (material.getType().equals(type)) {
+          materials.add(material.getMaterial());
+          getLogger().info("Adding material " + material.getMaterial().name());
+        }
+      } catch (NullPointerException e) {
+      }
+    }
+    return materials;
+  }
+
+  // Milk Bucket Exchange. Takes milk buckets in deposit box (chest), processes
+  // them, and then returns empty buckets to the deposit box.
   public void processMilkBuckets(Chest chest) {
     LinkedList<DepositCrop> milkBuckets = new LinkedList<>();
-    milkBuckets.add(new DepositCrop(Material.MILK_BUCKET, 0));
-    milkBuckets.add(new DepositCrop(Material.BUCKET, 0));
+    milkBuckets.add(new DepositCrop(Material.MILK_BUCKET, 0, null));
+    milkBuckets.add(new DepositCrop(Material.BUCKET, 0, null));
     int buckets = Functions.getAmountOf(milkBuckets, chest.getInventory());
     chest.getInventory().clear();
     chest.getInventory().addItem(new ItemStack(Material.BUCKET, buckets));
   }
 
   public void endDay() {
-    shouldDayEndEarly = false; //This is to reset the alternate condition where new day can be started with everyone in bed.
+    shouldDayEndEarly = false; // This is to reset the alternate condition where new day can be started with
+                               // everyone in bed.
     for (org.bukkit.entity.Player player : Bukkit.getOnlinePlayers()) {
-      if (!player.isSleeping() && playerShouldPassOut(player)) passOut(player);
+      if (!player.isSleeping() && playerShouldPassOut(player))
+        passOut(player);
     }
     punishPlayersForLoggingOutAtBedtime();
     world.setTime(0);
@@ -478,27 +497,30 @@ public class FarmersLife extends JavaPlugin implements CommandExecutor {
 
   public boolean playerShouldPassOut(org.bukkit.entity.Player player) {
     if (getPlayer(player).getSkills().bedperk) {
-      if (Functions.withinRangeOfBed(getPlayer(player))) return false;
+      if (Functions.withinRangeOfBed(getPlayer(player)))
+        return false;
     }
     return true;
   }
 
   public void passOut(org.bukkit.entity.Player player) {
     Location location = player.getBedSpawnLocation();
-    if (location != null) player.teleport(
-      player.getBedSpawnLocation()
-    ); else player.teleport(world.getSpawnLocation());
+    if (location != null)
+      player.teleport(
+          player.getBedSpawnLocation());
+    else
+      player.teleport(world.getSpawnLocation());
 
     int withdrawAmount = (int) Math.floor(economy.getBalance(player) * 0.1);
-    if (withdrawAmount > 1000) withdrawAmount = 1000;
+    if (withdrawAmount > 1000)
+      withdrawAmount = 1000;
     economy.withdrawPlayer(player, withdrawAmount);
 
     message(player, "Oh no! You passed out.");
     message(
-      player,
-      "We saw some people rummaging through your pockets, they stole $" +
-      withdrawAmount
-    );
+        player,
+        "We saw some people rummaging through your pockets, they stole $" +
+            withdrawAmount);
     player.setFoodLevel(3);
     Functions.giveCompass(player);
   }
@@ -507,9 +529,9 @@ public class FarmersLife extends JavaPlugin implements CommandExecutor {
     for (OfflinePlayer player : Bukkit.getOfflinePlayers()) {
       if (punishLogout.contains(player.getName())) {
         int withdrawAmount = (int) Math.floor(
-          economy.getBalance(player) * 0.15
-        );
-        if (withdrawAmount > 2000) withdrawAmount = 2000;
+            economy.getBalance(player) * 0.15);
+        if (withdrawAmount > 2000)
+          withdrawAmount = 2000;
         economy.withdrawPlayer(player, withdrawAmount);
       }
     }
@@ -518,11 +540,10 @@ public class FarmersLife extends JavaPlugin implements CommandExecutor {
 
   @Override
   public boolean onCommand(
-    CommandSender sender,
-    Command cmd,
-    String label,
-    String[] args
-  ) {
+      CommandSender sender,
+      Command cmd,
+      String label,
+      String[] args) {
     if (cmd.getName().equalsIgnoreCase("box")) {
       if (!waitingForPlayer.containsKey(sender.getName())) {
         waitingForPlayer.put(sender.getName(), "box");
@@ -532,9 +553,8 @@ public class FarmersLife extends JavaPlugin implements CommandExecutor {
             Thread.sleep(10000);
             if (waitingForPlayer.get(sender.getName()).equals("box")) {
               message(
-                sender,
-                "You took too long to select a chest. Try again!"
-              );
+                  sender,
+                  "You took too long to select a chest. Try again!");
               waitingForPlayer.remove(sender.getName());
             }
           } catch (InterruptedException e) {
@@ -546,37 +566,31 @@ public class FarmersLife extends JavaPlugin implements CommandExecutor {
       }
     } else if (cmd.getName().equalsIgnoreCase("farm")) {
       Objects
-        .requireNonNull(Bukkit.getPlayer(sender.getName()))
-        .openInventory(menuInventory);
+          .requireNonNull(Bukkit.getPlayer(sender.getName()))
+          .openInventory(menuInventory);
     } else if (cmd.getName().equalsIgnoreCase("reloadscores")) {
       for (curtis1509.farmerslife.Player p : players) {
         p.reloadScoreboard();
       }
-    } else if (
-      cmd.getName().equalsIgnoreCase("deathinventory") ||
-      cmd.getName().equalsIgnoreCase("di")
-    ) {
+    } else if (cmd.getName().equalsIgnoreCase("deathinventory") ||
+        cmd.getName().equalsIgnoreCase("di")) {
       for (curtis1509.farmerslife.Player player : players) {
-        if (
-          player.getName().equals(sender.getName()) &&
-          player.getDeathInventory() != null
-        ) {
+        if (player.getName().equals(sender.getName()) &&
+            player.getDeathInventory() != null) {
           Objects
-            .requireNonNull(Bukkit.getPlayer(sender.getName()))
-            .openInventory(player.getDeathInventory());
+              .requireNonNull(Bukkit.getPlayer(sender.getName()))
+              .openInventory(player.getDeathInventory());
         }
       }
     } else if (cmd.getName().equalsIgnoreCase("reloadshop")) {
-      Functions.reloadShop();
+      Functions.reloadShop(true);
+      generateBonusItems();
       message(sender, "Shop Reloaded");
-    } else if (
-      cmd.getName().equalsIgnoreCase("pen") &&
-      !waitingForPlayer.containsKey(sender.getName())
-    ) {
+    } else if (cmd.getName().equalsIgnoreCase("pen") &&
+        !waitingForPlayer.containsKey(sender.getName())) {
       message(
-        sender,
-        "Left click a block to set the first corner in your Selling Pen"
-      );
+          sender,
+          "Left click a block to set the first corner in your Selling Pen");
       waitingForPlayer.put(sender.getName(), "pen");
       Thread wait = new Thread(() -> {
         try {
@@ -594,11 +608,8 @@ public class FarmersLife extends JavaPlugin implements CommandExecutor {
     } else if (cmd.getName().equalsIgnoreCase("deletepen")) {
       Pen deletePen = null;
       for (Pen pen : pens) {
-        if (
-          pen.insidePen(
-            Functions.getPlayer(sender.getName()).getPlayer().getLocation()
-          )
-        ) {
+        if (pen.insidePen(
+            Functions.getPlayer(sender.getName()).getPlayer().getLocation())) {
           deletePen = pen;
           message(sender, "You've removed your Selling Pen");
         }

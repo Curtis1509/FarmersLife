@@ -41,6 +41,18 @@
                 <outputDir2>/Users/curtis/Development Local/Minecraft Test Server/plugins</outputDir2>
             </properties>
         </profile>
+        <profile>
+            <id>linux</id>
+            <activation>
+                <os>
+                    <family>linux</family>
+                </os>
+            </activation>
+            <properties>
+                <outputDir1>/home/curtis/releases/farmerslife</outputDir1>
+                <outputDir2>/home/curtis/minecraft/servers/farmerslife/plugins</outputDir2>
+            </properties>
+        </profile>
     </profiles>
 
     <build>
@@ -135,11 +147,6 @@
         </repository>
 
         <repository>
-            <id>jordanosterberg-repo</id>
-            <url>https://nexus-repo.jordanosterberg.com/repository/maven-releases/</url>
-        </repository>
-
-        <repository>
             <id>jitpack.io</id>
             <url>https://jitpack.io</url>
         </repository>
@@ -159,6 +166,7 @@
             <artifactId>JScoreboards</artifactId>
             <version>2.1.4-RELEASE</version>
         </dependency>
+
 
         <dependency>
             <groupId>com.github.MilkBowl</groupId>

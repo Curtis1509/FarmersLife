@@ -293,120 +293,172 @@ items:
 depositableitems:
   WHEAT:
     cost: 2.45
+    type: "crop"
   WHEAT_SEEDS:
     cost: 0.09
+    type: "crop"
   EGG:
     cost: 0.4
+    type: "animal"
   MILK_BUCKET:
     cost: 7.50
+    type: "animal"
   CARROT:
     cost: 0.67
+    type: "crop"
   BEEF:
     cost: 3.5
+    type: "animal"
   COOKED_BEEF:
     cost: 4.0
+    type: "animal"
   FEATHER:
     cost: 3.50
   PORKCHOP:
     cost: 3.55
+    type: "animal"
   COOKED_PORKCHOP:
     cost: 4.05
+    type: "animal"
   CHICKEN:
     cost: 5.5
+    type: "animal"
   COOKED_CHICKEN:
     cost: 6.0
+    type: "animal"
   MUTTON:
     cost: 3.5
+    type: "animal"
   COOKED_MUTTON:
     cost: 4.0
+    type: "animal"
   ROTTEN_FLESH:
     cost: 0.5
+    type: "animal"
   COOKED_RABBIT:
     cost: 10.0
+    type: "animal"
   RABBIT:
     cost: 9.0
+    type: "animal"
   POTATO:
     cost: 0.67
+    type: "crop"
   MELON_SLICE:
     cost: 0.53
+    type: "crop"
   MELON:
     cost: 4.77
+    type: "crop"
   BLAZE_ROD:
     cost: 30
   PUMPKIN:
     cost: 2.30
+    type: "crop"
   TROPICAL_FISH:
     cost: 11.5
+    type: "animal"
   PUFFERFISH:
     cost: 12.0
   COD:
     cost: 10.5
+    type: "animal"
   SALMON:
     cost: 11.5
+    type: "animal"
   COOKED_COD:
     cost: 11.0
+    type: "animal"
   COOKED_SALMON:
     cost: 12.0
+    type: "animal"
   CACTUS:
     cost: 2.5
   SUGAR_CANE:
     cost: 0.25
+    type: "crop"
   KELP:
     cost: 0.1
   COCOA_BEANS:
     cost: 1.10
+    type: "crop"
   DIAMOND:
     cost: 200
+    type: "mineral"
   DIAMOND_BLOCK:
     cost: 2000
+    type: "mineral"
   COPPER_INGOT:
     cost: 9
+    type: "mineral"
   COPPER_ORE:
     cost: 7
+    type: "mineral"
   RAW_COPPER:
     cost: 7
+    type: "mineral"
   RAW_COPPER_BLOCK:
     cost: 70
+    type: "mineral"
   COPPER_BLOCK:
     cost: 90
+    type: "mineral"
   COAL:
     cost: 6.75
+    type: "mineral"
   COAL_BLOCK:
     cost: 70
+    type: "mineral"
   EMERALD:
     cost: 15
+    type: "mineral"
   EMERALD_BLOCK:
     cost: 135
+    type: "mineral"
   ANCIENT_DEBRIS:
     cost: 1000
+    type: "mineral"
   IRON_ORE:
     cost: 15
+    type: "mineral"
   GREEN_DYE:
     cost: 3.0
   RAW_IRON:
     cost: 12
+    type: "mineral"
   IRON_INGOT:
     cost: 9
+    type: "mineral"
   IRON_BLOCK:
     cost: 90
+    type: "mineral"
   RAW_IRON_BLOCK:
     cost: 120
+    type: "mineral"
   GOLD_INGOT:
     cost: 30
+    type: "mineral"
   GOLD_ORE:
     cost: 25
+    type: "mineral"
   RAW_GOLD:
     cost: 25
+    type: "mineral"
   GOLD_BLOCK:
     cost: 300
+    type: "mineral"
   LAPIS_LAZULI:
     cost: 6.5
+    type: "mineral"
   LAPIS_BLOCK:
     cost: 80
+    type: "mineral"
   REDSTONE:
     cost: 5
+    type: "mineral"
   REDSTONE_BLOCK:
     cost: 50
+    type: "mineral"
   GLOWSTONE_DUST:
     cost: 3.5
   DRAGON_EGG:
@@ -423,3 +475,12 @@ depositableitems:
     cost: 7.0
   SPIDER_EYE:
     cost: 10.0
+  OAK_LOG:
+    cost: 3
+    type: "material"
+  DARK_OAK_LOG:
+    cost: 3.1
+    type: "material"
+  BIRCH:
+    cost: 3
+    type: "material"

@@ -9,6 +9,8 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.*;
+
+import org.apache.commons.lang.ObjectUtils.Null;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -49,17 +51,18 @@ public class FileReader {
   );
 
   public void FileProcessNewDay() {
-    saveDays();
     savePlayers();
     saveDeposits();
     savePens();
     createBackup();
   }
 
-  public void FileProcessReloadShop() {
+  public void FileProcessReloadShop(boolean includeDepositShop) {
     loadBuyShop();
     loadAnimalCosts();
-    loadDepositShop();
+    if (includeDepositShop){
+      loadDepositShop();
+    }
     loadGeneralStore();
   }
 
@@ -84,15 +87,6 @@ public class FileReader {
     getLogger().info(exception.getMessage());
   }
 
-  public void saveDays() {
-    try {
-      weatherConfig.set("day.count", dayNumber);
-      weatherConfig.save(weatherFile);
-    } catch (IOException exception) {
-      throwFileError(exception, "weather");
-    }
-  }
-
   //MARKED FOR REWORK
   public void CreateFile() {
     try {
@@ -100,7 +94,7 @@ public class FileReader {
       playersFile.createNewFile();
       depositsFile.createNewFile();
       statsFile.createNewFile();
-      weatherFile.createNewFile();
+      //weatherFile.createNewFile();
     } catch (IOException e) {
       e.printStackTrace();
     }
@@ -161,24 +155,16 @@ public class FileReader {
     } else stats.put(material, stat);
   }
 
-  public void getWeather() throws IOException {
-    int day = weatherConfig.getInt("day.count");
-    if (day == 0) {
-      day = 1;
-      weatherConfig.set("day.count", 1);
-      weatherConfig.save(weatherFile);
-      weather = "Wet";
+  public FileConfiguration getWeatherFileConfiguration(){
+    return weatherConfig;
+  }
+
+  public void saveWeatherFile(FileConfiguration configuration){
+    try {
+      configuration.save(weatherFile);
+    } catch (IOException e) {
+      e.printStackTrace();
     }
-    if (day > 20 && day < 40) {
-      weather = "Dry";
-    } else if (day > 0 && day < 20) {
-      weather = "Wet";
-    } else if (day > 40) {
-      weather = "Wet";
-      weatherConfig.set("day.count", 1);
-      weatherConfig.save(weatherFile);
-    }
-    if (day <= 20) dayNumber = 20 - day; else dayNumber = 40 - day;
   }
 
   public void saveStats(long day, String playerName) throws IOException {
@@ -461,7 +447,7 @@ public class FileReader {
       if (material != null) depositCrops.add(
         new DepositCrop(
           material,
-          shopConfig.getInt("depositableitems." + item + ".cost")
+          shopConfig.getInt("depositableitems." + item + ".cost"), shopConfig.getString("depositableitems." + item + ".type")
         )
       ); else getLogger()
         .info(

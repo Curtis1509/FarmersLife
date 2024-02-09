@@ -25,16 +25,15 @@ public class Player {
     boolean inPen = false;
     LinkedList<ItemStack> deliveryOrder = new LinkedList<ItemStack>();
 
-
-    public Player(org.bukkit.entity.Player player, int profitSkill, boolean protection, boolean bedperk, boolean teleport) {
+    public Player(org.bukkit.entity.Player player, int profitSkill, boolean protection, boolean bedperk,
+            boolean teleport) {
         skills = new Skills(profitSkill, protection, bedperk, teleport, player);
         this.player = player;
         this.playerName = player.getName();
         scoreboard = new JPerPlayerMethodBasedScoreboard();
         scoreboard.setTitle(player, "&aFarmers HUD");
         scoreboard.setLines(
-                player, "&6$" + economy.getBalance(player)
-        );
+                player, "&6$" + economy.getBalance(player));
         scoreboard.addPlayer(player);
         scoreboard.updateScoreboard();
     }
@@ -67,8 +66,7 @@ public class Player {
         scoreboard = new JPerPlayerMethodBasedScoreboard();
         scoreboard.setTitle(player, "&aFarmers HUD");
         scoreboard.setLines(
-                player, "&6$" + economy.getBalance(player)
-        );
+                player, "&6$" + economy.getBalance(player));
         scoreboard.addPlayer(player);
         scoreboard.updateScoreboard();
     }
@@ -101,7 +99,18 @@ public class Player {
         df.setGroupingSize(3);
 
         scoreboard.setLines(
-                player, "&6$" + df.format(Math.floor(economy.getBalance(player))), time, "Weather Season: &6" + weather, "Days Remaining: &6" + Functions.normalizeDayNumber()
+                player,
+                "Money &6$" + df.format(Math.floor(economy.getBalance(player))),
+                time + " Day: &6" + FarmersLife.weather.getDayInSeason(),
+                "Weather Season: &6" + FarmersLife.weather.getCurrentSeason(),
+                "Season Length: &6" + FarmersLife.weather.getSeasonLength(),
+                "------&3WEEKLY BONUSES&f------",
+                "Crop: &6"+FarmersLife.cropBonus.name()+" &f| &d"+FarmersLife.getMultiplier(FarmersLife.cropBonus)+"x",
+                "Mineral: &6"+FarmersLife.mineralBonus.name()+" &f| &d"+FarmersLife.getMultiplier(FarmersLife.mineralBonus)+"x",
+                "Material: &6"+FarmersLife.materialBonus.name()+" &f| &d"+FarmersLife.getMultiplier(FarmersLife.materialBonus)+"x",
+                "Animal: &6"+FarmersLife.animalBonus.name()+" &f| &d"+FarmersLife.getMultiplier(FarmersLife.animalBonus)+"x",
+                "Week ends in &6"+ (7 - FarmersLife.day) +" &fdays"
+
         );
         scoreboard.updateScoreboard();
     }

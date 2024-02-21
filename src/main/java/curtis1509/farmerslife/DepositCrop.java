@@ -1,6 +1,7 @@
 package curtis1509.farmerslife;
 
 import org.bukkit.Material;
+import static org.bukkit.Bukkit.getLogger;
 
 public class DepositCrop {
 

@@ -8,9 +8,6 @@ shopchance: 1.0
 #default chance of a special taking place
 specialchance: 0.25
 
-#default chance of an item being free
-freechance: 0.01
-
 generalitems:
   WHEAT_SEEDS:
     cost: 15
@@ -43,253 +40,374 @@ generalitems:
     cost: 4
     amount: 8
 
+#It is highly recommended when adding new items to add all of the fields including the ones
+#that have default values if missing. This is because if the default shop configuration
+#changes to include your custom item and a default value gets set for an optional field, then
+#your custom item will get updated to use the new default field since it was missing.
+
+#Also, you must use the official Bukkit Material names or the plugin will not find it.
+
 items:
   ELYTRA:
     cost: 10000
     special: 8950
     amount: 1
     shopchance: 0.4
+    specialchance: 0.25
   CONDUIT:
     cost: 20000
     special: 18000
     amount: 1
     shopchance: 0.4
+    specialchance: 0.25
   DIAMOND_BLOCK:
     cost: 2000
     special: 1000
     amount: 1
     specialchance: 0.1
+    shopchance: 1.0
   FIREWORK_ROCKET:
     cost: 200
     special: 1000
     amount: 16
+    shopchance: 1.0
+    specialchance: 0.25
   MAGMA_BLOCK:
     cost: 25
+    special: 20
     amount: 1
+    shopchance: 1.0
+    specialchance: 0.25
   SOUL_SAND:
     cost: 25
+    special: 20
     amount: 1
+    shopchance: 1.0
+    specialchance: 0.25
   OBSIDIAN:
     cost: 250
     special: 175
     amount: 1
+    shopchance: 1.0
+    specialchance: 0.25
   LAVA_BUCKET:
     cost: 75
+    special: 50
     amount: 1
+    shopchance: 1.0
+    specialchance: 0.25
   SEA_LANTERN:
     cost: 75
     special: 45
     amount: 1
+    shopchance: 1.0
+    specialchance: 0.25
   GLOWSTONE:
     cost: 40
+    special: 30
     amount: 1
+    shopchance: 1.0
+    specialchance: 0.25
   TINTED_GLASS:
     cost: 200
     special: 150
     amount: 1
+    shopchance: 1.0
+    specialchance: 0.25
   MOSSY_COBBLESTONE:
     cost: 50
+    special: 39
     amount: 8
+    shopchance: 1.0
+    specialchance: 0.25
   TERRACOTTA:
     cost: 125
     special: 99
     amount: 16
+    shopchance: 1.0
+    specialchance: 0.25
   SHULKER_SHELL:
     cost: 12500
     special: 9999
     amount: 2
+    shopchance: 1.0
+    specialchance: 0.25
   EXPERIENCE_BOTTLE:
     cost: 69
     special: 49
     amount: 1
+    shopchance: 1.0
+    specialchance: 0.25
   PRISMARINE:
     cost: 60
     special: 40
     amount: 4
+    shopchance: 1.0
+    specialchance: 0.25
   NAME_TAG:
     cost: 250
     special: 100
     amount: 1
+    shopchance: 1.0
+    specialchance: 0.25
   ENDER_PEARL:
     cost: 250
     special: 175
     amount: 4
+    shopchance: 1.0
+    specialchance: 0.25
   CROSSBOW:
     cost: 100
     special: 15
     amount: 1
+    shopchance: 1.0
+    specialchance: 0.25
   NETHERITE_HELMET:
     cost: 11000
     special: 9900
     amount: 1
     shopchance: 0.5
+    specialchance: 0.25
   NETHERITE_CHESTPLATE:
     cost: 13500
     special: 11200
     amount: 1
     shopchance: 0.3
+    specialchance: 0.25
   NETHERITE_LEGGINGS:
     cost: 12500
     special: 11300
     amount: 1
     shopchance: 0.4
+    specialchance: 0.25
   NETHERITE_BOOTS:
     cost: 11000
     special: 9900
     amount: 0.6
     shopchance: 0.5
+    specialchance: 0.25
   ARROW:
     cost: 250
     special: 125
     amount: 64
+    shopchance: 1.0
+    specialchance: 0.25
   ENCHANTED_GOLDEN_APPLE:
     cost: 2500
     special: 1950
     amount: 1
     shopchance: 0.3
+    specialchance: 0.25
   TOTEM_OF_UNDYING:
     cost: 2500
     special: 1990
     amount: 2
     shopchance: 0.3
+    specialchance: 0.25
   SPYGLASS:
     cost: 250
     special: 65
     amount: 1
+    shopchance: 1.0
+    specialchance: 0.25
   GOLDEN_APPLE:
     cost: 800
     special: 600
     amount: 3
+    shopchance: 1.0
+    specialchance: 0.25
   MAP:
     cost: 200
     special: 175
     amount: 1
+    shopchance: 1.0
+    specialchance: 0.25
   BLAZE_ROD:
     cost: 1000
     special: 890
     amount: 4
+    shopchance: 1.0
+    specialchance: 0.25
   CREEPER_SPAWN_EGG:
     cost: 350
     special: 299
     amount: 2
     shopchance: 0.3
+    specialchance: 0.25
   SLIME_BALL:
     cost: 200
     special: 150
     amount: 3
+    shopchance: 1.0
+    specialchance: 0.25
   WITHER_SKELETON_SKULL:
     cost: 10000
     special: 8000
     amount: 1
     shopchance: 0.3
+    specialchance: 0.25
   GHAST_TEAR:
     cost: 700
     special: 600
     amount: 2
+    shopchance: 1.0
+    specialchance: 0.25
   BRAIN_CORAL_BLOCK:
     cost: 500
     special: 400
     amount: 16
+    shopchance: 1.0
+    specialchance: 0.25
   BUBBLE_CORAL_BLOCK:
     cost: 500
     special: 400
     amount: 16
+    shopchance: 1.0
+    specialchance: 0.25
   FIRE_CORAL_BLOCK:
     cost: 500
     special: 400
     amount: 16
+    shopchance: 1.0
+    specialchance: 0.25
   HORN_CORAL_BLOCK:
     cost: 500
     special: 400
     amount: 16
+    shopchance: 1.0
+    specialchance: 0.25
   TUBE_CORAL_BLOCK:
     cost: 500
     special: 400
     amount: 16
+    shopchance: 1.0
+    specialchance: 0.25
   REINFORCED_DEEPSLATE:
     cost: 1000
     special: 850
     amount: 3
+    shopchance: 1.0
+    specialchance: 0.25
   PINK_CONCRETE:
     cost: 500
     special: 350
     amount: 32
+    shopchance: 1.0
+    specialchance: 0.25
   YELLOW_CONCRETE:
     cost: 500
     special: 350
     amount: 32
+    shopchance: 1.0
+    specialchance: 0.25
   GRAY_CONCRETE:
     cost: 500
     special: 350
     amount: 32
+    shopchance: 1.0
+    specialchance: 0.25
   LIGHT_GRAY_CONCRETE:
     cost: 500
     special: 350
     amount: 32
+    shopchance: 1.0
+    specialchance: 0.25
   BLACK_CONCRETE:
     cost: 500
     special: 350
     amount: 32
+    shopchance: 1.0
+    specialchance: 0.25
   PURPLE_CONCRETE:
     cost: 500
     special: 350
     amount: 32
+    shopchance: 1.0
+    specialchance: 0.25
   BLUE_CONCRETE:
     cost: 500
     special: 350
     amount: 32
+    shopchance: 1.0
+    specialchance: 0.25
   LIGHT_BLUE_CONCRETE:
     cost: 500
     special: 350
     amount: 32
+    shopchance: 1.0
+    specialchance: 0.25
   CYAN_CONCRETE:
     cost: 500
     special: 350
     amount: 32
+    shopchance: 1.0
+    specialchance: 0.25
   RED_CONCRETE:
     cost: 500
     special: 350
     amount: 32
+    shopchance: 1.0
+    specialchance: 0.25
   MAGENTA_CONCRETE:
     cost: 500
     special: 350
     amount: 32
+    shopchance: 1.0
+    specialchance: 0.25
   BROWN_CONCRETE:
     cost: 500
     special: 350
     amount: 32
+    shopchance: 1.0
+    specialchance: 0.25
   WHITE_CONCRETE:
     cost: 500
     special: 350
     amount: 32
+    shopchance: 1.0
+    specialchance: 0.25
   GREEN_CONCRETE:
     cost: 500
     special: 350
     amount: 32
+    shopchance: 1.0
+    specialchance: 0.25
   LIME_CONCRETE:
     cost: 500
     special: 350
     amount: 32
+    shopchance: 1.0
+    specialchance: 0.25
   ORANGE_CONCRETE:
     cost: 500
     special: 350
     amount: 32
+    shopchance: 1.0
+    specialchance: 0.25
   PACKED_ICE:
     cost: 200
     special: 100
     amount: 3
+    shopchance: 1.0
+    specialchance: 0.25
   PEARLESCENT_FROGLIGHT:
     cost: 1000
     special: 800
     amount: 2
+    shopchance: 1.0
+    specialchance: 0.25
   VERDANT_FROGLIGHT:
     cost: 1000
     special: 800
     amount: 2
+    shopchance: 1.0
+    specialchance: 0.25
   OCHRE_FROGLIGHT:
     cost: 1000
     special: 800
     amount: 2
+    shopchance: 1.0
+    specialchance: 0.25
 depositableitems:
   WHEAT:
     cost: 2.45
@@ -314,6 +432,7 @@ depositableitems:
     type: "animal"
   FEATHER:
     cost: 3.50
+    type: "NA"
   PORKCHOP:
     cost: 3.55
     type: "animal"
@@ -352,6 +471,7 @@ depositableitems:
     type: "crop"
   BLAZE_ROD:
     cost: 30
+    type: "NA"
   PUMPKIN:
     cost: 2.30
     type: "crop"
@@ -360,6 +480,7 @@ depositableitems:
     type: "animal"
   PUFFERFISH:
     cost: 12.0
+    type: "NA"
   COD:
     cost: 10.5
     type: "animal"
@@ -374,6 +495,7 @@ depositableitems:
     type: "animal"
   CACTUS:
     cost: 2.5
+    type: "NA"
   SUGAR_CANE:
     cost: 0.25
     type: "crop"
@@ -423,6 +545,7 @@ depositableitems:
     type: "mineral"
   GREEN_DYE:
     cost: 3.0
+    type: "NA"
   RAW_IRON:
     cost: 12
     type: "mineral"
@@ -461,20 +584,28 @@ depositableitems:
     type: "mineral"
   GLOWSTONE_DUST:
     cost: 3.5
+    type: "NA"
   DRAGON_EGG:
     cost: 10000
+    type: "NA"
   VILLAGER_SPAWN_EGG:
     cost: 145
+    type: "NA"
   POPPY:
     cost: 0.3
+    type: "NA"
   BONE:
     cost: 7.0
+    type: "NA"
   GUNPOWDER:
     cost: 10.0
+    type: "NA"
   STRING:
     cost: 7.0
+    type: "NA"
   SPIDER_EYE:
     cost: 10.0
+    type: "NA"
   OAK_LOG:
     cost: 3
     type: "material"

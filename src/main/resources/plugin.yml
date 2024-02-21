@@ -6,6 +6,9 @@ commands:
   box:
     description: Selects a chest to exchange crops for gold
     usage: /box (Then select a chest)
+  shipment:
+    description: Selects a chest for your shop deliveries to arrive
+    usage: /shipment (Then select a chest)
   farm:
     description: All your farming goodies in the one place
   deathinventory:

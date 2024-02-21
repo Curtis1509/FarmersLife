@@ -53,6 +53,7 @@ public class FarmersLife extends JavaPlugin implements CommandExecutor {
   public static LinkedList<String> interactQueue = new LinkedList<>();
   public static LinkedList<String> punishLogout = new LinkedList<>();
   public static LinkedList<DepositBox> depositBoxes = new LinkedList<>();
+  public static LinkedList<ShipmentBox> shipmentBoxes = new LinkedList<>();
   public static LinkedList<Pen> pens = new LinkedList<>();
   public static LinkedList<Location> shopBlockLocations = new LinkedList<>();
 
@@ -254,83 +255,12 @@ public class FarmersLife extends JavaPlugin implements CommandExecutor {
     }
   }
 
-  public void processDepositBoxes() {
+  public void processBoxes(){
     for (DepositBox box : depositBoxes) {
-      if (box.getDepositBox().getType() == Material.CHEST) {
-        Chest chest = (Chest) box.getDepositBox().getState();
-        for (curtis1509.farmerslife.Player player : players) {
-          if (box.getOwner().equals(player.getName())) {
-            try {
-              economy.depositPlayer(
-                  player.getPlayer(),
-                  Functions.getAmountOfCash(
-                      depositCrops,
-                      chest.getInventory(),
-                      player.getName()) *
-                      player.getSkills().skillProfits.getMultiplier());
-              fileReader.saveStats(day, player.getName());
-            } catch (IOException e) {
-              e.printStackTrace();
-            }
-          }
-          Thread wait = new Thread(() -> {
-            try {
-              player
-                  .getPlayer()
-                  .playSound(
-                      player.getPlayer().getLocation(),
-                      Sound.ENTITY_CHICKEN_AMBIENT,
-                      3,
-                      1);
-              try {
-                Thread.sleep(500);
-              } catch (InterruptedException e) {
-                e.printStackTrace();
-              }
-              player
-                  .getPlayer()
-                  .playSound(
-                      player.getPlayer().getLocation(),
-                      Sound.ENTITY_CHICKEN_DEATH,
-                      3,
-                      1);
-            } catch (Exception e) {
-              e.printStackTrace();
-            }
-          });
-          wait.start();
-        }
-
-        LinkedList<ItemStack> deliveryItems = new LinkedList<>();
-        for (ItemStack delivery : chest.getInventory().getContents()) {
-          if (delivery != null) {
-            if (delivery.getItemMeta().getDisplayName().contains("Shop"))
-              deliveryItems.add(delivery);
-          }
-        }
-
-        processMilkBuckets(chest);
-
-        for (ItemStack itemStack : deliveryItems)
-          chest
-              .getInventory()
-              .addItem(itemStack);
-
-        if (box.isShipmentBox() && Functions.getPlayer(box.getOwner()) != null) {
-          boolean itemsDelivered = false;
-          for (ItemStack item : Functions
-              .getPlayer(box.getOwner())
-              .getDeliveryOrder()) {
-            itemsDelivered = true;
-            chest.getInventory().addItem(item);
-          }
-          Functions.getPlayer(box.getOwner()).getDeliveryOrder().clear();
-          if (itemsDelivered)
-            message(
-                Functions.getPlayer(box.getOwner()).getPlayer(),
-                "Your delivery has arrived inside your shipment box");
-        }
-      }
+      box.processBox();
+    }
+    for (ShipmentBox box : shipmentBoxes) {
+      box.deliverItems();
     }
   }
 
@@ -400,11 +330,31 @@ public class FarmersLife extends JavaPlugin implements CommandExecutor {
       broadcastTitle("Rise and Shine", "Sunny Day");
 
     processSellingPens();
-    processDepositBoxes();
+    processBoxes();
     announceMostProfitableFarmer();
     Functions.reloadShop(false);
     fileReader.FileProcessNewDay();
     generateBonusItems();
+    playNewDaySound();
+  }
+
+  public void playNewDaySound() {
+    for (Player player : players) {
+      Thread wait = new Thread(() -> {
+        playSound(player, Sound.ENTITY_CHICKEN_AMBIENT);
+        try {
+          Thread.sleep(500);
+        } catch (InterruptedException e) {
+          e.printStackTrace();
+        }
+        playSound(player, Sound.ENTITY_CHICKEN_DEATH);
+      });
+      wait.start();
+    }
+  }
+
+  public void playSound(Player player, Sound sound) {
+    player.getPlayer().playSound(player.getPlayer().getLocation(), sound, 3, 1);
   }
 
   public static int day = 0;
@@ -429,30 +379,30 @@ public class FarmersLife extends JavaPlugin implements CommandExecutor {
       mineralBonus = material.get(random.nextInt(material.size()));
       animalBonus = animal.get(random.nextInt(animal.size()));
 
-      setDepositCropBonus(cropBonus,materialBonus,mineralBonus,animalBonus);
+      setDepositCropBonus(cropBonus, materialBonus, mineralBonus, animalBonus);
     }
   }
 
-  public void setDepositCropBonus(Material cropBonus, Material materialBonus, Material mineralBonus, Material animalBonus){
-    for (DepositCrop depositCrop : depositCrops){
+  public void setDepositCropBonus(Material cropBonus, Material materialBonus, Material mineralBonus,
+      Material animalBonus) {
+    for (DepositCrop depositCrop : depositCrops) {
       if (depositCrop.getMaterial().name().equals(cropBonus.name())
-      || depositCrop.getMaterial().name().equals(materialBonus.name())
-      || depositCrop.getMaterial().name().equals(mineralBonus.name())
-      || depositCrop.getMaterial().name().equals(animalBonus.name())){
+          || depositCrop.getMaterial().name().equals(materialBonus.name())
+          || depositCrop.getMaterial().name().equals(mineralBonus.name())
+          || depositCrop.getMaterial().name().equals(animalBonus.name())) {
         Random random = new Random();
         double randomNumber = 1 + random.nextDouble() * 2;
         randomNumber = Math.round(randomNumber * 100.0) / 100.0;
         depositCrop.setBonusActive(true, randomNumber);
-      }
-      else {
+      } else {
         depositCrop.setBonusActive(false, 0);
       }
     }
   }
 
-  public static double getMultiplier(Material material){
-    for (DepositCrop depositCrop : depositCrops){
-      if (material.name().equals(depositCrop.getMaterial().name())){
+  public static double getMultiplier(Material material) {
+    for (DepositCrop depositCrop : depositCrops) {
+      if (material.name().equals(depositCrop.getMaterial().name())) {
         return depositCrop.getMultiplier();
       }
     }
@@ -548,6 +498,26 @@ public class FarmersLife extends JavaPlugin implements CommandExecutor {
       if (!waitingForPlayer.containsKey(sender.getName())) {
         waitingForPlayer.put(sender.getName(), "box");
         message(sender, "Great! Click a chest to make it your deposit box.");
+        Thread wait = new Thread(() -> {
+          try {
+            Thread.sleep(10000);
+            if (waitingForPlayer.get(sender.getName()).equals("box")) {
+              message(
+                  sender,
+                  "You took too long to select a chest. Try again!");
+              waitingForPlayer.remove(sender.getName());
+            }
+          } catch (InterruptedException e) {
+            e.printStackTrace();
+          }
+        });
+        wait.start();
+        return true;
+      }
+    } else if (cmd.getName().equalsIgnoreCase("shipment")) {
+      if (!waitingForPlayer.containsKey(sender.getName())) {
+        waitingForPlayer.put(sender.getName(), "shipment");
+        message(sender, "Great! Click a chest to make it your shipment box.");
         Thread wait = new Thread(() -> {
           try {
             Thread.sleep(10000);

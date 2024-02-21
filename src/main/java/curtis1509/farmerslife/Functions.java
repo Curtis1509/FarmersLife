@@ -31,16 +31,40 @@ public class Functions {
 
   public static boolean isDepositBox(Location location) {
     for (DepositBox box : depositBoxes) {
-      if (box.getDepositBox().getLocation().equals(location)) {
+      if (box.getBox().getLocation().equals(location) && box instanceof DepositBox) {
         return true;
       }
     }
     return false;
   }
 
-  public static DepositBox getDepositBox(Location location) {
+  //Is this necessary anymore? Probably not.
+  public static DepositBox getBox(Location location) {
     for (DepositBox box : depositBoxes) {
-      if (box.getDepositBox().getLocation().equals(location)) {
+      if (box.getBox().getLocation().equals(location)) {
+        return box;
+      }
+    }
+    return null;
+  }
+
+  public boolean isBox(Location location){
+    for (DepositBox box : depositBoxes){
+      if (box.getBox().getLocation().equals(location)) {
+        return true;
+      }
+    }
+    for (ShipmentBox box : shipmentBoxes){
+      if (box.getBox().getLocation().equals(location)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  public static ShipmentBox getPlayersShipmentBox(Player player) {
+    for (ShipmentBox box : shipmentBoxes) {
+      if (box.getOwner().equals(player.getName())) {
         return box;
       }
     }
@@ -170,17 +194,6 @@ public class Functions {
       }
     }
     return boxes;
-  }
-
-  public static DepositBox getDeliveryBox(org.bukkit.entity.Player player) {
-    for (DepositBox box : depositBoxes) {
-      if (box.getOwner().equals(player.getName())) {
-        if (box.isShipmentBox()) {
-          return box;
-        }
-      }
-    }
-    return null;
   }
 
   public static void giveCardPack(org.bukkit.entity.Player player) {

@@ -1,39 +1,41 @@
 package curtis1509.farmerslife;
 
+import java.io.IOException;
+import java.util.LinkedList;
+
+import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.inventory.ItemStack;
 
-public class DepositBox {
+public class DepositBox extends Box {
 
-    boolean shipmentBox;
-    Block chest;
-    String owner;
-    int id;
-
-    public DepositBox(Block chest, String owner, int id, boolean shipmentBox){
-        this.chest = chest;
-        this.owner = owner;
-        this.id = id;
-        this.shipmentBox = shipmentBox;
+    public DepositBox(Block chest, String owner, int id) {
+        super(chest, owner, id);
     }
 
-    public void makeShipmentBox(){
-        shipmentBox = true;
+    public void processBox() {
+        try {
+            FarmersLife.economy.depositPlayer(
+                    Functions.getPlayer(getOwner()).getPlayer(),
+                    Functions.getAmountOfCash(
+                            FarmersLife.depositCrops,
+                            getBox().getInventory(),
+                            getOwner()) *
+                            Functions.getPlayer(getOwner()).getSkills().skillProfits.getMultiplier());
+            FarmersLife.fileReader.saveStats(FarmersLife.day, getOwner());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        processMilkBuckets();
     }
 
-    public Block getDepositBox(){
-        return chest;
-    }
-
-    public String getOwner(){
-        return owner;
-    }
-
-    public int getID(){
-        return id;
-    }
-
-    public boolean isShipmentBox(){
-        return shipmentBox;
+    public void processMilkBuckets() {
+        LinkedList<DepositCrop> milkBuckets = new LinkedList<>();
+        milkBuckets.add(new DepositCrop(Material.MILK_BUCKET, 0, null));
+        milkBuckets.add(new DepositCrop(Material.BUCKET, 0, null));
+        int buckets = Functions.getAmountOf(milkBuckets, getBox().getInventory());
+        getBox().getInventory().clear();
+        getBox().getInventory().addItem(new ItemStack(Material.BUCKET, buckets));
     }
 
 }

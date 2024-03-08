@@ -2,19 +2,30 @@ package curtis1509.farmerslife;
 
 import org.bukkit.Location;
 
-import java.util.Objects;
-
 public class Pen {
-    Location pointA;
-    Location pointB;
-    String owner;
-    int id;
+    private final Location pointA;
+    private final Location pointB;
+    private final String owner;
+    private final int id;
 
     public Pen(Location pointA, Location pointB, String owner, int id){
         this.pointA = pointA;
         this.pointB = pointB;
         this.owner = owner;
         this.id = id;
+    }
+
+    public Location getPointA(){
+        return pointA;
+    }
+    public Location getPointB(){
+        return pointB;
+    }
+    public String getOwner(){
+        return owner;
+    }
+    public int getId(){
+        return id;
     }
 
     public static boolean checkMaxSize(Location pointA, Location pointB) {

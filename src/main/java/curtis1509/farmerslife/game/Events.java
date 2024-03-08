@@ -1,4 +1,4 @@
-package curtis1509.farmerslife;
+package curtis1509.farmerslife.game;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -23,12 +23,15 @@ import org.bukkit.event.player.*;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-
+import curtis1509.farmerslife.BuyItem;
+import curtis1509.farmerslife.Pen;
+import curtis1509.farmerslife.Skills;
+import curtis1509.farmerslife.box.DepositBox;
+import curtis1509.farmerslife.box.ShipmentBox;
 import java.io.IOException;
 import java.util.*;
 
 import static curtis1509.farmerslife.FarmersLife.*;
-import static org.bukkit.Bukkit.getLogger;
 
 public class Events extends Functions implements Listener {
 
@@ -51,7 +54,7 @@ public class Events extends Functions implements Listener {
                 || event.getRecipe().getResult().getType().toString().toLowerCase().contains("boots")
                 || event.getRecipe().getResult().getType().toString().toLowerCase().contains("helmet")) {
             for (curtis1509.farmerslife.Player player : players) {
-                if (player.getSkills().protection && player.getName().equals(event.getWhoClicked().getName())) {
+                if (player.getSkills().hasProtection() && player.getName().equals(event.getWhoClicked().getName())) {
                     Objects.requireNonNull(event.getCurrentItem()).addEnchantment(Enchantment.PROTECTION_ENVIRONMENTAL,
                             4);
                     player.getPlayer().playSound(player.getPlayer().getLocation(), Sound.BLOCK_ANVIL_USE, 3, 1);
@@ -180,11 +183,10 @@ public class Events extends Functions implements Listener {
                                         waitingForPlayer.remove(event.getPlayer().getName());
                                     }
                                 } else {
-                                    message(event.getPlayer(),
-                                                "This is already your deposit box");
-                                        taken = true;
-                                        waitingForPlayer.remove(event.getPlayer().getName());
-                                        break;
+                                    message(event.getPlayer(), "This is already your deposit box");
+                                    taken = true;
+                                    waitingForPlayer.remove(event.getPlayer().getName());
+                                    break;
                                 }
                             }
                         }
@@ -194,9 +196,8 @@ public class Events extends Functions implements Listener {
                                     "Cool beans! Put some crops in here overnight and you can get some money in return!");
                             waitingForPlayer.remove(event.getPlayer().getName());
                             Random random = new Random();
-                            depositBoxes
-                                    .add(new DepositBox((Block) event.getClickedBlock().getLocation().getBlock(),
-                                            event.getPlayer().getName(), random.nextInt(100000)));
+                            depositBoxes.add(new DepositBox((Block) event.getClickedBlock().getLocation().getBlock(),
+                                    event.getPlayer().getName(), random.nextInt(100000)));
                         }
                     }
 
@@ -212,13 +213,11 @@ public class Events extends Functions implements Listener {
                                         taken = true;
                                         waitingForPlayer.remove(event.getPlayer().getName());
                                     }
-                                }
-                                else {
-                                    message(event.getPlayer(),
-                                                "This is already your shipment box");
-                                        taken = true;
-                                        waitingForPlayer.remove(event.getPlayer().getName());
-                                        break;
+                                } else {
+                                    message(event.getPlayer(), "This is already your shipment box");
+                                    taken = true;
+                                    waitingForPlayer.remove(event.getPlayer().getName());
+                                    break;
                                 }
                             }
                         }
@@ -228,10 +227,8 @@ public class Events extends Functions implements Listener {
                                     "Great, everything you purchase from the shop will go to this shipment box.");
                             waitingForPlayer.remove(event.getPlayer().getName());
                             Random random = new Random();
-                            shipmentBoxes
-                                    .add(new ShipmentBox(
-                                            (Block) event.getClickedBlock().getLocation().getBlock(),
-                                            event.getPlayer().getName(), random.nextInt(100000)));
+                            shipmentBoxes.add(new ShipmentBox((Block) event.getClickedBlock().getLocation().getBlock(),
+                                    event.getPlayer().getName(), random.nextInt(100000)));
                         }
 
                     }
@@ -377,7 +374,7 @@ public class Events extends Functions implements Listener {
                 p.storeInventory(removedInventory);
         }
 
-        getPlayer(event.getEntity()).deathInventoryi = 3;
+        getPlayer(event.getEntity()).resetDeathInventoryI();
         message(event.getEntity(), "Oh no! You were knocked out unconscious and lost some items");
         sendClickableCommand(event.getEntity(), "&9[FarmersLife] &6Click to &2[GET] &6 some of your lost items back",
                 "deathinventory");
@@ -404,7 +401,8 @@ public class Events extends Functions implements Listener {
                             } else {
                                 event.getRightClicked().setCustomName(oldName);
                                 event.setCancelled(true);
-                                event.getPlayer().getInventory().getItemInMainHand().add(1);
+                                event.getPlayer().getInventory().getItemInMainHand().setAmount(
+                                        event.getPlayer().getInventory().getItemInMainHand().getAmount() + 1);;
                             }
                         }
                     }, 2);
@@ -414,9 +412,10 @@ public class Events extends Functions implements Listener {
                 String name = event.getRightClicked().getCustomName();
                 for (String key : animalNames.keySet()) {
                     if (key.equals(name)) {
-                        message(event.getPlayer(), name + " " + animalNames.get(name) + " days old " +
-                                "$" + (int) Math.floor(calculateAnimalPayout(event.getRightClicked(),
-                                        getPlayer(event.getPlayer().getName()))));
+                        message(event.getPlayer(),
+                                name + " " + animalNames.get(name) + " days old " + "$"
+                                        + (int) Math.floor(calculateAnimalPayout(event.getRightClicked(),
+                                                getPlayer(event.getPlayer().getName()))));
                     }
                 }
             } else {
@@ -434,8 +433,8 @@ public class Events extends Functions implements Listener {
                 if (isDepositBox(event.getClickedInventory().getLocation())) {
                     event.setCancelled(true);
                     if (!containsItem(depositCrops, event.getWhoClicked().getItemOnCursor())) {
-                        message(getPlayer(getBox(event.getClickedInventory().getLocation()).getOwner())
-                                .getPlayer(), "That item cannot be sold yet.");
+                        message(getPlayer(getBox(event.getClickedInventory().getLocation()).getOwner()).getPlayer(),
+                                "That item cannot be sold yet.");
                     } else
                         event.setCancelled(false);
                 }
@@ -468,11 +467,11 @@ public class Events extends Functions implements Listener {
                             }
                         } else if (event.getCurrentItem().getType() == Material.DIAMOND_CHESTPLATE) {
                             event.setCancelled(true);
-                            if (!p.getSkills().protection)
+                            if (!p.getSkills().hasProtection())
                                 p.getSkills().buyProtection(p);
                         } else if (event.getCurrentItem().getType() == Material.RED_BED) {
                             event.setCancelled(true);
-                            if (!p.getSkills().bedperk)
+                            if (!p.getSkills().hasBedPerk())
                                 p.getSkills().buyBedPerk(p);
                         } else if (event.getCurrentItem().getType() == Material.APPLE) {
                             event.setCancelled(true);
@@ -597,11 +596,11 @@ public class Events extends Functions implements Listener {
                                 event.setCancelled(true);
                                 event.getWhoClicked().getInventory().addItem(event.getCurrentItem());
                                 inventory.remove(Objects.requireNonNull(event.getCurrentItem()));
-                                p.deathInventoryi--;
-                                if (p.deathInventoryi == 0 || p.getDeathInventory().isEmpty()) {
+                                p.decreaseDeathInventoryI();
+                                if (p.getDeathInventoryI() == 0 || p.getDeathInventory().isEmpty()) {
                                     event.getWhoClicked().closeInventory();
                                     p.clearDeathInventory();
-                                    p.deathInventoryi = 3;
+                                    p.resetDeathInventoryI();
                                 }
                             } else {
                                 message(p.getPlayer(), "Insufficient Balance. It costs $250 to retrieve an item.");

@@ -41,7 +41,7 @@ public class DepositCrop {
         return type;
     }
 
-    public double getMultiplier(){
+    public double getMultiplier() {
         return bonusMultiplier;
     }
 

@@ -20,17 +20,23 @@ import static curtis1509.farmerslife.Functions.message;
 public class Skills {
 
     public Inventory skillsInventory = Bukkit.createInventory(null, 18, "Skills");
-    SkillProfits skillProfits;
-    boolean protection;
-    boolean bedperk;
-    boolean teleport;
+    public SkillProfits skillProfits;
+    private boolean protection;
+    private boolean bedperk;
 
-    public Skills(int skillProfitsLevel, boolean protection, boolean bedperk, boolean teleport, Player player) {
+    public Skills(int skillProfitsLevel, boolean protection, boolean bedperk, Player player) {
         this.skillProfits = new SkillProfits(skillProfitsLevel);
         this.protection = protection;
         this.bedperk = bedperk;
-        this.teleport = teleport;
         populateSkillsInventory(player);
+    }
+
+    public boolean hasProtection(){
+        return protection;
+    }
+
+    public boolean hasBedPerk(){
+        return bedperk;
     }
 
     public void populateSkillsInventory(Player player) {

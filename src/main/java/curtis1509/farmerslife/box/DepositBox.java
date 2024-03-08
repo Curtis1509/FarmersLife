@@ -1,4 +1,4 @@
-package curtis1509.farmerslife;
+package curtis1509.farmerslife.box;
 
 import java.io.IOException;
 import java.util.LinkedList;
@@ -6,6 +6,9 @@ import java.util.LinkedList;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.inventory.ItemStack;
+import curtis1509.farmerslife.DepositCrop;
+import curtis1509.farmerslife.FarmersLife;
+import curtis1509.farmerslife.Functions;
 
 public class DepositBox extends Box {
 
@@ -15,13 +18,9 @@ public class DepositBox extends Box {
 
     public void processBox() {
         try {
-            FarmersLife.economy.depositPlayer(
-                    Functions.getPlayer(getOwner()).getPlayer(),
-                    Functions.getAmountOfCash(
-                            FarmersLife.depositCrops,
-                            getBox().getInventory(),
-                            getOwner()) *
-                            Functions.getPlayer(getOwner()).getSkills().skillProfits.getMultiplier());
+            FarmersLife.economy.depositPlayer(Functions.getPlayer(getOwner()).getPlayer(),
+                    Functions.getAmountOfCash(FarmersLife.depositCrops, getBox().getInventory(), getOwner())
+                            * Functions.getPlayer(getOwner()).getSkills().skillProfits.getMultiplier());
             FarmersLife.fileReader.saveStats(FarmersLife.day, getOwner());
         } catch (IOException e) {
             e.printStackTrace();

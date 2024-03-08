@@ -4,7 +4,6 @@ import dev.jcsoftware.jscoreboards.JPerPlayerMethodBasedScoreboard;
 import dev.jcsoftware.jscoreboards.JScoreboardTeam;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-
 import java.text.DecimalFormat;
 import java.util.LinkedList;
 
@@ -14,12 +13,13 @@ import static org.bukkit.Bukkit.getLogger;
 public class Player {
 
     String playerName;
-    JPerPlayerMethodBasedScoreboard scoreboard;
+    private JPerPlayerMethodBasedScoreboard scoreboard;
     JScoreboardTeam team;
     org.bukkit.entity.Player player;
     Inventory deathInventory;
     int golemIronSoldToday = 0;
-    int deathInventoryi = 3;
+    int defaultDeathInventoryI = 3;
+    int deathInventoryi = defaultDeathInventoryI;
     Skills skills;
     double todaysCash = 0;
     boolean inPen = false;
@@ -27,7 +27,7 @@ public class Player {
 
     public Player(org.bukkit.entity.Player player, int profitSkill, boolean protection, boolean bedperk,
             boolean teleport) {
-        skills = new Skills(profitSkill, protection, bedperk, teleport, player);
+        skills = new Skills(profitSkill, protection, bedperk, player);
         this.player = player;
         this.playerName = player.getName();
         scoreboard = new JPerPlayerMethodBasedScoreboard();
@@ -36,6 +36,30 @@ public class Player {
                 player, "&6$" + economy.getBalance(player));
         scoreboard.addPlayer(player);
         scoreboard.updateScoreboard();
+    }
+
+    public void resetDeathInventoryI(){
+        deathInventoryi = defaultDeathInventoryI;
+    }
+
+    public void decreaseDeathInventoryI(){
+        deathInventoryi--;
+    }
+
+    public int getDeathInventoryI(){
+        return deathInventoryi;
+    }
+
+    public void updateScoreboard(){
+        scoreboard.updateScoreboard();
+    }
+
+    public int getGolemIronSoldToday(){
+        return golemIronSoldToday;
+    }
+
+    public void addGolemIronSoldToday(int amount){
+        golemIronSoldToday += amount;
     }
 
     public LinkedList<ItemStack> getDeliveryOrder() {
